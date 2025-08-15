@@ -24,8 +24,8 @@
         <SkillsRadarChart />
       </ChartContainer>
 
-      <ChartContainer title="Department Overview">
-        <div class="placeholder-chart">Custom visualization placeholder</div>
+      <ChartContainer title="Performance vs Time Correlation">
+        <PerformanceScatterChart />
       </ChartContainer>
     </div>
   </div>
@@ -36,6 +36,7 @@ import StatsCard from './StatsCard.vue'
 import ChartContainer from './ChartContainer.vue'
 import PerformanceTrendChart from './PerformanceTrendChart.vue'
 import SkillsRadarChart from './SkillsRadarChart.vue'
+import PerformanceScatterChart from './PerformanceScatterChart.vue'
 import { useInsights } from '@/composables/useInsights';
 import { computed } from 'vue';
 

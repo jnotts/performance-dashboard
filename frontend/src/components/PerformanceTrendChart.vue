@@ -73,23 +73,6 @@ const chartData = computed((): ChartData<'line'> | null => {
         pointHoverBackgroundColor: '#1d4ed8',
         pointHoverBorderColor: '#ffffff',
         pointHoverBorderWidth: 2,
-      },
-      {
-        label: 'Average Score',
-        data: sortedTrends.map(trend => Math.round(trend.averageScore * 10) / 10),
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#3b82f6',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#1d4ed8',
-        pointHoverBorderColor: '#ffffff',
-        pointHoverBorderWidth: 2,
       }
     ]
   }
