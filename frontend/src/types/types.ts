@@ -28,6 +28,12 @@ export interface DepartmentStats {
   department: string
   averageScore: number
   scores: number[]
+  skillAverages: {
+    communication: number
+    problemSolving: number
+    productKnowledge: number
+    customerService: number
+  }
 }
 
 export interface SkillStats {
@@ -44,6 +50,7 @@ export interface TrendData {
 export interface Insights {
   totalSessions: number
   overallPassRate: number
+  averageScore: number
   averageScoresByDepartment: DepartmentStats[]
   topPerformingSkills: SkillStats[]
   recentTrends: TrendData[]

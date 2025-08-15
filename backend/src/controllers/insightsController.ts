@@ -44,6 +44,8 @@ export const getInsights = (req: Request, res: Response) => {
   const insights = {
     totalSessions: sessions.length,
     overallPassRate: sessions.filter((s) => s.passed).length / sessions.length,
+    averageScore:
+      sessions.reduce((sum, s) => sum + s.overallScore, 0) / sessions.length,
     averageScoresByDepartment: getAverageScoresByDepartment(sessions),
     topPerformingSkills: getTopPerformingSkills(sessions),
     recentTrends: getRecentTrends(sessions),
@@ -62,6 +64,12 @@ function getAverageScoresByDepartment(sessions: TrainingSession[]) {
     [key: string]: {
       scores: number[];
       totalScore: number;
+      skillAverages: {
+        communication: number;
+        problemSolving: number;
+        productKnowledge: number;
+        customerService: number;
+      };
     };
   } = {};
 
@@ -71,18 +79,38 @@ function getAverageScoresByDepartment(sessions: TrainingSession[]) {
       departmentScores[session.department] = {
         scores: [],
         totalScore: 0,
+        skillAverages: {
+          communication: 0,
+          problemSolving: 0,
+          productKnowledge: 0,
+          customerService: 0,
+        },
       };
     }
     departmentScores[session.department].scores.push(session.overallScore);
     departmentScores[session.department].totalScore += session.overallScore;
+    departmentScores[session.department].skillAverages.communication +=
+      session.skills.communication;
+    departmentScores[session.department].skillAverages.problemSolving +=
+      session.skills.problemSolving;
+    departmentScores[session.department].skillAverages.productKnowledge +=
+      session.skills.productKnowledge;
+    departmentScores[session.department].skillAverages.customerService +=
+      session.skills.customerService;
   });
 
   // return department name with array of scores and average score
   const averageScoresByDepartment = Object.entries(departmentScores).map(
-    ([department, { scores, totalScore }]) => ({
+    ([department, { scores, totalScore, skillAverages }]) => ({
       department,
       averageScore: totalScore / scores.length,
       scores,
+      skillAverages: {
+        communication: skillAverages.communication / scores.length,
+        problemSolving: skillAverages.problemSolving / scores.length,
+        productKnowledge: skillAverages.productKnowledge / scores.length,
+        customerService: skillAverages.customerService / scores.length,
+      },
     })
   );
 

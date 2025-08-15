@@ -17,11 +17,11 @@
 
     <div class="charts-grid">
       <ChartContainer title="Performance Trends">
-        <div class="placeholder-chart">Line Chart - Performance over time</div>
+        <PerformanceTrendChart />
       </ChartContainer>
 
       <ChartContainer title="Skills Comparison">
-        <div class="placeholder-chart">Bar Chart - Skills by department</div>
+        <SkillsRadarChart />
       </ChartContainer>
 
       <ChartContainer title="Department Overview">
@@ -34,6 +34,8 @@
 <script setup lang="ts">
 import StatsCard from './StatsCard.vue'
 import ChartContainer from './ChartContainer.vue'
+import PerformanceTrendChart from './PerformanceTrendChart.vue'
+import SkillsRadarChart from './SkillsRadarChart.vue'
 import { useInsights } from '@/composables/useInsights';
 import { computed } from 'vue';
 
@@ -43,14 +45,13 @@ const { data, isLoading, error } = useInsights();
 const totalSessions = computed(() => data.value?.insights.totalSessions ?? 0);
 const passRate = computed(() => {
   const rate = data.value?.insights.overallPassRate ?? 0;
-  return `${Math.round(rate * 100)}%`;
+  return `${Math.round(rate * 100)}%`; // nearest %
 });
 const avgScore = computed(() => {
-  const sessions = data.value?.rawTrainingData.sessions ?? [];
-  if (sessions.length === 0) return 0;
-  const total = sessions.reduce((sum, session) => sum + session.overallScore, 0);
-  return Math.round((total / sessions.length) * 10) / 10; // Round to 1 decimal
+  const avg = (data.value?.insights.averageScore ?? 0)
+  return Math.round(avg * 10) / 10; // 1dp
 });
+
 const departmentCount = computed(() => {
   const departments = new Set(data.value?.rawTrainingData.sessions.map(s => s.department) ?? []);
   return departments.size;
