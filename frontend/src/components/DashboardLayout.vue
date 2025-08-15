@@ -1,21 +1,29 @@
 <template>
-  <div class="dashboard-layout">
+  <div v-if="isLoading" class="loading-state">
+    <div>Loading dashboard...</div>
+  </div>
+
+  <div v-else-if="error" class="error-state">
+    <div>Error loading data: {{ error.message }}</div>
+  </div>
+
+  <div v-else class="dashboard-layout">
     <div class="stats-grid">
-      <StatsCard title="Total Sessions" :value="42" />
-      <StatsCard title="Pass Rate" :value="'85%'" />
-      <StatsCard title="Avg Score" :value="87.3" />
-      <StatsCard title="Departments" :value="3" />
+      <StatsCard title="Total Sessions" :value="totalSessions" />
+      <StatsCard title="Pass Rate" :value="passRate" />
+      <StatsCard title="Avg Score" :value="avgScore" />
+      <StatsCard title="Departments" :value="departmentCount" />
     </div>
 
     <div class="charts-grid">
       <ChartContainer title="Performance Trends">
         <div class="placeholder-chart">Line Chart - Performance over time</div>
       </ChartContainer>
-      
+
       <ChartContainer title="Skills Comparison">
         <div class="placeholder-chart">Bar Chart - Skills by department</div>
       </ChartContainer>
-      
+
       <ChartContainer title="Department Overview">
         <div class="placeholder-chart">Custom visualization placeholder</div>
       </ChartContainer>
@@ -26,6 +34,28 @@
 <script setup lang="ts">
 import StatsCard from './StatsCard.vue'
 import ChartContainer from './ChartContainer.vue'
+import { useInsights } from '@/composables/useInsights';
+import { computed } from 'vue';
+
+const { data, isLoading, error } = useInsights();
+
+// Computed stats for the cards
+const totalSessions = computed(() => data.value?.insights.totalSessions ?? 0);
+const passRate = computed(() => {
+  const rate = data.value?.insights.overallPassRate ?? 0;
+  return `${Math.round(rate * 100)}%`;
+});
+const avgScore = computed(() => {
+  const sessions = data.value?.rawTrainingData.sessions ?? [];
+  if (sessions.length === 0) return 0;
+  const total = sessions.reduce((sum, session) => sum + session.overallScore, 0);
+  return Math.round((total / sessions.length) * 10) / 10; // Round to 1 decimal
+});
+const departmentCount = computed(() => {
+  const departments = new Set(data.value?.rawTrainingData.sessions.map(s => s.department) ?? []);
+  return departments.size;
+});
+
 </script>
 
 <style scoped>
@@ -48,7 +78,7 @@ import ChartContainer from './ChartContainer.vue'
   gap: 24px;
 }
 
-.charts-grid > :last-child {
+.charts-grid> :last-child {
   grid-column: 1 / -1;
 }
 
@@ -67,9 +97,23 @@ import ChartContainer from './ChartContainer.vue'
   .charts-grid {
     grid-template-columns: 1fr;
   }
-  
-  .charts-grid > :last-child {
+
+  .charts-grid> :last-child {
     grid-column: 1;
   }
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 18px;
+  color: #64748b;
+}
+
+.error-state {
+  color: #dc2626;
 }
 </style>
