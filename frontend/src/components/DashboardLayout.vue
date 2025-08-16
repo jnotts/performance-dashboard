@@ -27,6 +27,10 @@
       <ChartContainer title="Performance vs Time Correlation">
         <PerformanceScatterChart />
       </ChartContainer>
+
+      <!-- <ChartContainer title="Performance vs Time Correlation">
+        <PerformanceScatterChart />
+      </ChartContainer> -->
     </div>
   </div>
 </template>
@@ -80,29 +84,19 @@ const departmentCount = computed(() => {
   gap: 24px;
 }
 
-.charts-grid> :last-child {
+/* .charts-grid> :last-child {
   grid-column: 1 / -1;
-}
+} */
 
-.placeholder-chart {
-  height: 300px;
-  background: #f1f5f9;
-  border: 2px dashed #cbd5e1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  font-style: italic;
-}
 
-@media (max-width: 768px) {
+@media (max-width: 991px) {
   .charts-grid {
     grid-template-columns: 1fr;
   }
 
-  .charts-grid> :last-child {
+  /* .charts-grid> :last-child {
     grid-column: 1;
-  }
+  } */
 }
 
 .loading-state,

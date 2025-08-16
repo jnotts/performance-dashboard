@@ -137,7 +137,7 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
     },
     y: {
       beginAtZero: false,
-      min: 60, // todo: make dynamic
+      // min: 0, // todo: make dynamic
       max: 100,
       grid: {
         color: 'rgba(107, 114, 128, 0.1)',

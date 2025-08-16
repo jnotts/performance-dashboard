@@ -104,7 +104,7 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
   },
   plugins: {
     legend: {
-      position: 'right',
+      position: 'bottom',
       labels: {
         padding: 20,
         usePointStyle: true,
@@ -259,8 +259,8 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
   transform: translateY(1px);
 }
 
-.chart-container>div:last-child {
+/* .chart-container>div:last-child {
   flex: 1;
   min-height: 0;
-}
+} */
 </style>
