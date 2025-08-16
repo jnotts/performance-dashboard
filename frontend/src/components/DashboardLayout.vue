@@ -1,19 +1,16 @@
 <template>
-  <div v-if="isLoading" class="loading-state">
-    <div>Loading dashboard...</div>
-  </div>
-
-  <div v-else-if="error" class="error-state">
-    <div>Error loading data: {{ error.message }}</div>
-  </div>
-
-  <div v-else class="dashboard-layout">
+  <div class="dashboard-layout">
     <!-- Dashboard Header Component -->
     <DashboardHeader v-model:start-date="startDate" v-model:end-date="endDate"
       v-model:selected-department="selectedDepartment" />
 
+    <!-- Error state -->
+    <div v-if="error" class="error-message">
+      Error loading data: {{ error.message }}
+    </div>
+
     <!-- Compact stats cards -->
-    <div class="stats-grid">
+    <div class="stats-grid" :class="{ 'loading': isLoading }">
       <StatsCard title="Total Sessions" :value="totalSessions" />
       <StatsCard title="Pass Rate" :value="passRate" />
       <StatsCard title="Avg Score" :value="avgScore" />
@@ -21,7 +18,7 @@
     </div>
 
     <!-- Charts layout: 2 on top, smaller chart + AI insights below -->
-    <div class="charts-container">
+    <div class="charts-container" :class="{ 'loading': isLoading }">
       <div class="charts-row-main">
         <ChartContainer title="Performance Trends" class="chart-main">
           <PerformanceTrendChart :data="data" />
@@ -88,29 +85,35 @@ const startDate = ref('')
 const endDate = ref('')
 
 // Current filters
-const currentFilters = computed(() => {
-  const filters: FilterParams = {}
-  if (selectedDepartment.value) filters.department = selectedDepartment.value
-  if (startDate.value) filters.startDate = startDate.value
-  if (endDate.value) filters.endDate = endDate.value
-  return filters
-})
+const currentFilters = computed(() => ({
+  department: selectedDepartment.value || undefined,
+  startDate: startDate.value || undefined,
+  endDate: endDate.value || undefined
+}) as FilterParams)
 
 // Fetch data with filters
 const { data, isLoading, error } = useInsights(currentFilters);
 
-// Computed stats for the cards
-const totalSessions = computed(() => data.value?.insights.totalSessions ?? 0);
+// Computed stats for the cards with fallbacks
+const totalSessions = computed(() => {
+  if (isLoading.value && !data.value) return "Loading..."
+  return data.value?.insights.totalSessions ?? 0
+});
+
 const passRate = computed(() => {
+  if (isLoading.value && !data.value) return "Loading..."
   const rate = data.value?.insights.overallPassRate ?? 0;
   return `${Math.round(rate * 100)}%`;
 });
+
 const avgScore = computed(() => {
+  if (isLoading.value && !data.value) return "Loading..."
   const avg = (data.value?.insights.averageScore ?? 0)
   return Math.round(avg * 10) / 10;
 });
 
 const departmentCount = computed(() => {
+  if (isLoading.value && !data.value) return "Loading..."
   const departments = new Set(data.value?.rawTrainingData.sessions.map(s => s.department) ?? []);
   return departments.size;
 });
@@ -132,6 +135,12 @@ const departmentCount = computed(() => {
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   margin-bottom: 32px;
+  transition: opacity 0.3s ease;
+}
+
+.stats-grid.loading {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 /* Charts Container */
@@ -139,6 +148,12 @@ const departmentCount = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  transition: opacity 0.3s ease;
+}
+
+.charts-container.loading {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .charts-row-main {
@@ -275,17 +290,13 @@ const departmentCount = computed(() => {
   }
 }
 
-.loading-state,
-.error-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  font-size: 18px;
-  color: #64748b;
-}
-
-.error-state {
+.error-message {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
   color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
 }
 </style>
