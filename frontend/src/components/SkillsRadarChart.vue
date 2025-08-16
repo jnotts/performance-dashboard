@@ -1,6 +1,19 @@
 <template>
   <div class="chart-wrapper">
     <Radar v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" />
+    <div v-else class="chart-skeleton">
+      <div class="empty-radar">
+        <div class="radar-circles">
+          <div class="circle"></div>
+          <div class="circle"></div>
+          <div class="circle"></div>
+        </div>
+        <div class="radar-lines">
+          <div class="line horizontal"></div>
+          <div class="line vertical"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -167,5 +180,66 @@ const chartOptions = computed((): ChartOptions<'radar'> => ({
   position: relative;
   height: 400px;
   width: 100%;
+}
+
+.chart-skeleton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.empty-radar {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.radar-circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.circle {
+  position: absolute;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.circle:nth-child(1) { width: 200px; height: 200px; }
+.circle:nth-child(2) { width: 133px; height: 133px; }
+.circle:nth-child(3) { width: 66px; height: 66px; }
+
+.radar-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.line {
+  position: absolute;
+  background: #e5e7eb;
+}
+
+.line.horizontal {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+}
+
+.line.vertical {
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
 }
 </style>

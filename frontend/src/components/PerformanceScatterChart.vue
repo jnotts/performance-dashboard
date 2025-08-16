@@ -245,7 +245,7 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
 <style scoped>
 .chart-wrapper {
   position: relative;
-  height: 450px;
+  height: 400px;
   width: 100%;
 }
 

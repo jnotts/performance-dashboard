@@ -88,7 +88,16 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: false
+      position: 'bottom',
+      labels: {
+        padding: 20,
+        usePointStyle: true,
+        font: {
+          size: 10,
+          weight: 500
+        },
+        color: '#374151'
+      }
     },
     tooltip: {
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -180,7 +189,7 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
 <style scoped>
 .chart-wrapper {
   position: relative;
-  height: 300px;
+  height: 400px;
   width: 100%;
 }
 </style>
