@@ -22,7 +22,7 @@ import {
   type TooltipItem,
   type ChartData
 } from 'chart.js'
-import { useInsights } from '@/composables/useInsights'
+import type { ApiResponse } from '@/utils/types'
 
 // Register Chart.js components
 ChartJS.register(
@@ -36,12 +36,17 @@ ChartJS.register(
   Filler
 )
 
-const { data } = useInsights()
+// Accept data as prop
+interface Props {
+  data?: ApiResponse
+}
+
+const props = defineProps<Props>()
 
 // Process data for chart
 const chartData = computed((): ChartData<'line'> | null => {
-  if (!data.value?.insights.recentTrends) return null
-  const trends = data.value.insights.recentTrends
+  if (!props.data?.insights.recentTrends) return null
+  const trends = props.data.insights.recentTrends
 
   // Sort by date to ensure proper line progression
   const sortedTrends = [...trends].sort((a, b) =>
@@ -98,7 +103,7 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
           return `Date: ${context[0].label}`
         },
         label: (context: TooltipItem<'line'>) => {
-          const sessionCount = data.value?.insights.recentTrends.find(
+          const sessionCount = props.data?.insights.recentTrends.find(
             trend => new Date(trend.date).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric'

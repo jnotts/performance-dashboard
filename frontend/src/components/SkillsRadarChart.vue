@@ -19,7 +19,7 @@ import {
   type ChartData,
   type TooltipItem
 } from 'chart.js'
-import { useInsights } from '@/composables/useInsights'
+import type { ApiResponse } from '@/utils/types'
 
 // Register Chart.js components
 ChartJS.register(
@@ -31,7 +31,12 @@ ChartJS.register(
   Legend
 )
 
-const { data } = useInsights()
+// Accept data as prop
+interface Props {
+  data?: ApiResponse
+}
+
+const props = defineProps<Props>()
 
 // Department colors for consistent styling
 const departmentColors = {
@@ -44,10 +49,10 @@ const departmentColors = {
 }
 
 const chartData = computed((): ChartData<'radar'> | null => {
-  if (!data.value?.insights.averageScoresByDepartment.length) return null
+  if (!props.data?.insights.averageScoresByDepartment.length) return null
 
-  const departmentStats = data.value.insights.averageScoresByDepartment
-  const skillLabels = ['Communication', 'Problem Solving', 'Product Knowledge', 'Customer Service']
+  const departmentStats = props.data.insights.averageScoresByDepartment
+  const skillLabels = ['Communication', 'Problem\nSolving', 'Product\nKnowledge', 'Customer\nService']
 
   return {
     labels: skillLabels,
@@ -88,7 +93,7 @@ const chartOptions = computed((): ChartOptions<'radar'> => ({
         padding: 20,
         usePointStyle: true,
         font: {
-          size: 12,
+          size: 10,
           weight: 500
         },
         color: '#374151'
@@ -127,9 +132,10 @@ const chartOptions = computed((): ChartOptions<'radar'> => ({
       },
       pointLabels: {
         font: {
-          size: 12,
-          weight: 500
+          size: 10,
+          weight: 500,
         },
+
         color: '#374151',
         padding: 10
       },

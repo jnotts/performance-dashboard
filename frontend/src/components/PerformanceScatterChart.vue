@@ -24,7 +24,7 @@ import {
   type ChartData,
   type TooltipItem
 } from 'chart.js'
-import { useInsights } from '@/composables/useInsights'
+import type { ApiResponse } from '@/utils/types'
 
 // Register Chart.js components
 ChartJS.register(
@@ -34,7 +34,12 @@ ChartJS.register(
   Legend
 )
 
-const { data } = useInsights()
+// Accept data as prop
+interface Props {
+  data?: ApiResponse
+}
+
+const props = defineProps<Props>()
 const chartRef = ref()
 
 // Functions to control all datasets
@@ -59,12 +64,12 @@ const departmentColors = {
 }
 
 const chartData = computed((): ChartData<'scatter'> | null => {
-  if (!data.value?.rawTrainingData.sessions) return null
+  if (!props.data?.rawTrainingData.sessions) return null
 
-  const sessions = data.value.rawTrainingData.sessions
+  const sessions = props.data.rawTrainingData.sessions
 
   // Group by department for different colored datasets 
-  const departmentGroups: { [key: string]: Array<{ x: number, y: number }> } = {}
+  const departmentGroups: { [key: string]: Array<{ x: number, y: number, pass: boolean }> } = {}
 
   // extract completionTime and overallScore
   sessions.forEach(session => {
@@ -74,7 +79,8 @@ const chartData = computed((): ChartData<'scatter'> | null => {
 
     departmentGroups[session.department].push({
       x: session.completionTime,
-      y: session.overallScore
+      y: session.overallScore,
+      pass: session.passed
     })
   })
 
@@ -82,13 +88,15 @@ const chartData = computed((): ChartData<'scatter'> | null => {
     datasets: Object.entries(departmentGroups).map(([department, points]) => ({
       label: department,
       data: points,
+      pointStyle: points.map(point => point.pass ? 'circle' : 'crossRot'),
       backgroundColor: (departmentColors[department as keyof typeof departmentColors] || departmentColors.default) + '80',
       borderColor: departmentColors[department as keyof typeof departmentColors] || departmentColors.default,
       pointRadius: 4,
       pointHoverRadius: 6,
       pointBorderWidth: 1,
       pointHoverBorderWidth: 2,
-      pointHoverBorderColor: '#ffffff',
+      pointHoverBackgroundColor: departmentColors[department as keyof typeof departmentColors] || departmentColors.default,
+      // pointHoverBorderColor: '#ffffff',
     }))
   }
 })
@@ -98,7 +106,6 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
   maintainAspectRatio: false,
   layout: {
     padding: {
-      // right: 20,
       bottom: 40
     }
   },
@@ -109,17 +116,49 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
         padding: 20,
         usePointStyle: true,
         font: {
-          size: 12,
+          size: 10,
           weight: 500
         },
         color: '#374151',
+        generateLabels: (chart) => {
+          const labels = ChartJS.defaults.plugins.legend.labels.generateLabels(chart)
+
+          // add pass/fail indicators to the legend
+          labels.push(
+            {
+              text: 'Pass',
+              fillStyle: '#6b7280',
+              strokeStyle: '#6b7280',
+              pointStyle: 'circle',
+              // datasetIndex: -1,
+              // index: -1
+            },
+            {
+              text: 'Fail',
+              fillStyle: '#6b7280',
+              strokeStyle: '#6b7280',
+              pointStyle: 'crossRot',
+              // datasetIndex: -2,
+              // index: -2
+            }
+          )
+          return labels
+        }
       },
       onHover: (event, legendItem, legend) => {
         legend.chart.canvas.style.cursor = 'pointer'
       },
       onLeave: (event, legendItem, legend) => {
         legend.chart.canvas.style.cursor = 'default'
-      }
+      },
+      // onClick: (event, legendItem, legend) => {
+      //   // Only handle clicks for department datasets (not pass/fail indicators)
+      //   if (legendItem.datasetIndex && legendItem.datasetIndex >= 0) {
+      //     const chart = legend.chart
+      //     chart.setDatasetVisibility(legendItem.datasetIndex, !chart.isDatasetVisible(legendItem.datasetIndex))
+      //     chart.update()
+      //   }
+      // }
     },
     tooltip: {
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -199,14 +238,6 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
     duration: 1000,
     easing: 'easeInOutQuart'
   },
-  elements: {
-    point: {
-      hoverBackgroundColor: (context) => {
-        const score = context.parsed.y
-        return score >= 70 ? '#10b981' : '#ef4444' // Green for pass, red for fail
-      }
-    }
-  }
 }))
 </script>
 

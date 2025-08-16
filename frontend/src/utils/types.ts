@@ -56,7 +56,20 @@ export interface Insights {
   recentTrends: TrendData[]
 }
 
+export interface FilterParams {
+  department?: string
+  startDate?: string
+  endDate?: string
+}
+
+export interface AppliedFilters {
+  department: string | null
+  startDate: string | null
+  endDate: string | null
+}
+
 export interface ApiResponse {
   insights: Insights
   rawTrainingData: TrainingData
+  appliedFilters: AppliedFilters
 }
