@@ -1,32 +1,12 @@
 import { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
-
-// Define interfaces for the training session data
-interface TrainingSession {
-  sessionId: string;
-  userId: string;
-  userName: string;
-  department: string;
-  date: string;
-  overallScore: number;
-  skills: {
-    communication: number;
-    problemSolving: number;
-    productKnowledge: number;
-    customerService: number;
-  };
-  completionTime: number;
-  passed: boolean;
-}
-
-interface TrainingData {
-  metadata: {
-    generatedAt: string;
-    version: string;
-  };
-  sessions: TrainingSession[];
-}
+import {
+  getAverageScoresByDepartment,
+  getTopPerformingSkills,
+  getRecentTrends,
+} from "../utils/utils.js";
+import type { TrainingData } from "../utils/types.js";
 
 // read data at startup for now - avoid reading in each request
 const dataPath = path.join(process.cwd(), "training-data.json");
@@ -40,141 +20,59 @@ const trainingData: TrainingData = JSON.parse(rawData);
  * @returns object containing calculated `insights` and `rawTrainingData`
  */
 export const getInsights = (req: Request, res: Response) => {
-  const { sessions } = trainingData;
+  const { department, startDate, endDate } = req.query;
+
+  let filteredSessions = trainingData.sessions;
+
+  // filter by department
+  if (department && typeof department === "string") {
+    filteredSessions = filteredSessions.filter(
+      (session) => session.department.toLowerCase() === department.toLowerCase()
+    );
+  }
+
+  // filter by date range
+  if (startDate && typeof startDate === "string") {
+    const start = new Date(startDate);
+    filteredSessions = filteredSessions.filter(
+      (session) => new Date(session.date) >= start
+    );
+  }
+
+  if (endDate && typeof endDate === "string") {
+    const end = new Date(endDate);
+    filteredSessions = filteredSessions.filter(
+      (session) => new Date(session.date) <= end
+    );
+  }
+
   const insights = {
-    totalSessions: sessions.length,
-    overallPassRate: sessions.filter((s) => s.passed).length / sessions.length,
+    totalSessions: filteredSessions.length,
+    overallPassRate:
+      filteredSessions.length > 0
+        ? filteredSessions.filter((s) => s.passed).length /
+          filteredSessions.length
+        : 0,
     averageScore:
-      sessions.reduce((sum, s) => sum + s.overallScore, 0) / sessions.length,
-    averageScoresByDepartment: getAverageScoresByDepartment(sessions),
-    topPerformingSkills: getTopPerformingSkills(sessions),
-    recentTrends: getRecentTrends(sessions),
+      filteredSessions.length > 0
+        ? filteredSessions.reduce((sum, s) => sum + s.overallScore, 0) /
+          filteredSessions.length
+        : 0,
+    averageScoresByDepartment: getAverageScoresByDepartment(filteredSessions),
+    topPerformingSkills: getTopPerformingSkills(filteredSessions),
+    recentTrends: getRecentTrends(filteredSessions),
   };
 
-  return res.json({ insights, rawTrainingData: trainingData });
+  return res.json({
+    insights,
+    rawTrainingData: {
+      ...trainingData,
+      sessions: filteredSessions,
+    },
+    appliedFilters: {
+      department: department || null,
+      startDate: startDate || null,
+      endDate: endDate || null,
+    },
+  });
 };
-
-/**
- * Get average scores by department from the training sessions
- * @param sessions - The array of training sessions
- * @returns An array of objects containing department names and their average scores
- */
-function getAverageScoresByDepartment(sessions: TrainingSession[]) {
-  const departmentScores: {
-    [key: string]: {
-      scores: number[];
-      totalScore: number;
-      skillAverages: {
-        communication: number;
-        problemSolving: number;
-        productKnowledge: number;
-        customerService: number;
-      };
-    };
-  } = {};
-
-  // Group scores by department
-  sessions.forEach((session) => {
-    if (!departmentScores[session.department]) {
-      departmentScores[session.department] = {
-        scores: [],
-        totalScore: 0,
-        skillAverages: {
-          communication: 0,
-          problemSolving: 0,
-          productKnowledge: 0,
-          customerService: 0,
-        },
-      };
-    }
-    departmentScores[session.department].scores.push(session.overallScore);
-    departmentScores[session.department].totalScore += session.overallScore;
-    departmentScores[session.department].skillAverages.communication +=
-      session.skills.communication;
-    departmentScores[session.department].skillAverages.problemSolving +=
-      session.skills.problemSolving;
-    departmentScores[session.department].skillAverages.productKnowledge +=
-      session.skills.productKnowledge;
-    departmentScores[session.department].skillAverages.customerService +=
-      session.skills.customerService;
-  });
-
-  // return department name with array of scores and average score
-  const averageScoresByDepartment = Object.entries(departmentScores).map(
-    ([department, { scores, totalScore, skillAverages }]) => ({
-      department,
-      averageScore: totalScore / scores.length,
-      scores,
-      skillAverages: {
-        communication: skillAverages.communication / scores.length,
-        problemSolving: skillAverages.problemSolving / scores.length,
-        productKnowledge: skillAverages.productKnowledge / scores.length,
-        customerService: skillAverages.customerService / scores.length,
-      },
-    })
-  );
-
-  return averageScoresByDepartment;
-}
-
-/**
- * Get the top performing skills from the training sessions
- * @param sessions - The array of training sessions
- * @returns An array of objects containing skill names and their average scores
- */
-function getTopPerformingSkills(sessions: TrainingSession[]) {
-  // assume fixed skill set for now based on training data
-  const skillTotals = {
-    communication: 0,
-    problemSolving: 0,
-    productKnowledge: 0,
-    customerService: 0,
-  };
-
-  // sum up skill scores for each session
-  sessions.forEach((session) => {
-    skillTotals.communication += session.skills.communication;
-    skillTotals.problemSolving += session.skills.problemSolving;
-    skillTotals.productKnowledge += session.skills.productKnowledge;
-    skillTotals.customerService += session.skills.customerService;
-  });
-
-  const sessionCount = sessions.length;
-  if (sessionCount === 0) return [];
-
-  // calculate average scores for each skill, sorted high to low
-  return Object.entries(skillTotals)
-    .map(([skill, total]) => ({
-      skill,
-      averageScore: total / sessionCount,
-    }))
-    .sort((a, b) => b.averageScore - a.averageScore);
-}
-
-/**
- * Get recent trends from the training sessions
- * @param sessions - The array of training sessions
- * @returns An array of objects containing date, average score, and session count
- */
-function getRecentTrends(sessions: TrainingSession[]) {
-  // Sort sessions by date
-  const sortedSessions = sessions.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
-  // Group by date and calculate daily averages
-  const dailyScores: { [key: string]: number[] } = {};
-
-  sortedSessions.forEach((session) => {
-    if (!dailyScores[session.date]) {
-      dailyScores[session.date] = [];
-    }
-    dailyScores[session.date].push(session.overallScore);
-  });
-
-  return Object.entries(dailyScores).map(([date, scores]) => ({
-    date,
-    averageScore: scores.reduce((sum, score) => sum + score, 0) / scores.length,
-    sessionCount: scores.length,
-  }));
-}
