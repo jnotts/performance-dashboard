@@ -8,22 +8,11 @@
   </div>
 
   <div v-else class="dashboard-layout">
-    <!-- Simple inline filters -->
-    <div class="filters">
-      <select v-model="selectedDepartment" class="filter-select">
-        <option value="">All Departments</option>
-        <option v-for="dept in departments" :key="dept" :value="dept">{{ dept }}</option>
-      </select>
+    <!-- Dashboard Header Component -->
+    <DashboardHeader v-model:start-date="startDate" v-model:end-date="endDate"
+      v-model:selected-department="selectedDepartment" />
 
-      <input v-model="startDate" type="date" class="filter-input" placeholder="Start date" />
-
-      <input v-model="endDate" type="date" class="filter-input" placeholder="End date" />
-
-      <button v-if="hasFilters" @click="clearFilters" class="clear-btn">
-        Clear Filters
-      </button>
-    </div>
-
+    <!-- Compact stats cards -->
     <div class="stats-grid">
       <StatsCard title="Total Sessions" :value="totalSessions" />
       <StatsCard title="Pass Rate" :value="passRate" />
@@ -31,18 +20,53 @@
       <StatsCard title="Departments" :value="departmentCount" />
     </div>
 
-    <div class="charts-grid">
-      <ChartContainer title="Performance Trends">
-        <PerformanceTrendChart :data="data" />
-      </ChartContainer>
+    <!-- Charts layout: 2 on top, smaller chart + AI insights below -->
+    <div class="charts-container">
+      <div class="charts-row-main">
+        <ChartContainer title="Performance Trends" class="chart-main">
+          <PerformanceTrendChart :data="data" />
+        </ChartContainer>
 
-      <ChartContainer title="Skills Comparison">
-        <SkillsRadarChart :data="data" />
-      </ChartContainer>
+        <ChartContainer title="Skills Comparison" class="chart-main">
+          <SkillsRadarChart :data="data" />
+        </ChartContainer>
+      </div>
 
-      <ChartContainer title="Performance vs Time Correlation">
-        <PerformanceScatterChart :data="data" />
-      </ChartContainer>
+      <div class="charts-row-secondary">
+        <ChartContainer title="Performance vs Time" class="chart-secondary">
+          <PerformanceScatterChart :data="data" />
+        </ChartContainer>
+
+        <div class="ai-insights-container">
+          <div class="ai-insights-header">
+            <h3>AI Insights</h3>
+            <div class="ai-status">
+              <div class="ai-indicator"></div>
+              <span>Analyzing...</span>
+            </div>
+          </div>
+          <div class="ai-insights-content">
+            <div class="insight-item">
+              <div class="insight-icon">💡</div>
+              <div class="insight-text">
+                <p><strong>Engineering excelling:</strong> 95% average performance, +12% vs last month</p>
+              </div>
+            </div>
+            <div class="insight-item">
+              <div class="insight-icon">📈</div>
+              <div class="insight-text">
+                <p><strong>Improvement trend:</strong> All departments showing positive growth</p>
+              </div>
+            </div>
+            <div class="insight-item">
+              <div class="insight-icon">⚠️</div>
+              <div class="insight-text">
+                <p><strong>Focus area:</strong> Operations problem-solving scores need attention</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -54,6 +78,7 @@ import ChartContainer from './ChartContainer.vue'
 import PerformanceTrendChart from './PerformanceTrendChart.vue'
 import SkillsRadarChart from './SkillsRadarChart.vue'
 import PerformanceScatterChart from './PerformanceScatterChart.vue'
+import DashboardHeader from './DashboardHeader.vue'
 import { useInsights } from '@/composables/useInsights';
 import type { FilterParams } from '@/utils/types';
 
@@ -61,9 +86,6 @@ import type { FilterParams } from '@/utils/types';
 const selectedDepartment = ref('')
 const startDate = ref('')
 const endDate = ref('')
-
-// Available departments
-const departments = ['Sales', 'Support', 'Engineering', 'Marketing', 'Operations']
 
 // Current filters
 const currentFilters = computed(() => {
@@ -73,14 +95,6 @@ const currentFilters = computed(() => {
   if (endDate.value) filters.endDate = endDate.value
   return filters
 })
-
-const hasFilters = computed(() => selectedDepartment.value || startDate.value || endDate.value)
-
-const clearFilters = () => {
-  selectedDepartment.value = ''
-  startDate.value = ''
-  endDate.value = ''
-}
 
 // Fetch data with filters
 const { data, isLoading, error } = useInsights(currentFilters);
@@ -105,79 +119,160 @@ const departmentCount = computed(() => {
 
 <style scoped>
 .dashboard-layout {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 24px;
+  background-color: #f8fafc;
+  min-height: 100vh;
 }
 
-.filters {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 24px;
-  padding: 16px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-}
-
-.filter-select,
-.filter-input {
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  background: white;
-}
-
-.filter-select:focus,
-.filter-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
-
-.clear-btn {
-  padding: 8px 16px;
-  background: #fee2e2;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  color: #dc2626;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.clear-btn:hover {
-  background: #fecaca;
-}
-
+/* Stats Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
   margin-bottom: 32px;
 }
 
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
+/* Charts Container */
+.charts-container {
+  display: flex;
+  flex-direction: column;
   gap: 24px;
 }
 
-/* .charts-grid> :last-child {
-  grid-column: 1 / -1;
-} */
+.charts-row-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
 
+.charts-row-secondary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
 
-@media (max-width: 991px) {
-  .charts-grid {
+.chart-main {
+  min-height: 400px;
+}
+
+.chart-secondary {
+  min-height: 350px;
+}
+
+/* AI Insights Container */
+.ai-insights-container {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+.ai-insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ai-insights-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.ai-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.ai-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.ai-insights-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.insight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 3px solid #71C4D5;
+}
+
+.insight-icon {
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+.insight-text p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.insight-text strong {
+  color: #1f2937;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .dashboard-layout {
+    padding: 16px;
+  }
+
+  .charts-row-main {
     grid-template-columns: 1fr;
   }
 
-  /* .charts-grid> :last-child {
-    grid-column: 1;
-  } */
+  .charts-row-secondary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .loading-state,

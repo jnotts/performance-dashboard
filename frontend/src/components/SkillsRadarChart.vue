@@ -40,7 +40,7 @@ const props = defineProps<Props>()
 
 // Department colors for consistent styling
 const departmentColors = {
-  Sales: { bg: 'rgba(59, 130, 246, 0.2)', border: '#3b82f6' },
+  Sales: { bg: 'rgba(113, 196, 213, 0.2)', border: '#71C4D5' },
   Support: { bg: 'rgba(16, 185, 129, 0.2)', border: '#10b981' },
   Engineering: { bg: 'rgba(139, 92, 246, 0.2)', border: '#8b5cf6' },
   Marketing: { bg: 'rgba(245, 158, 11, 0.2)', border: '#f59e0b' },
@@ -103,7 +103,7 @@ const chartOptions = computed((): ChartOptions<'radar'> => ({
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
       titleColor: '#ffffff',
       bodyColor: '#ffffff',
-      borderColor: '#3b82f6',
+      borderColor: '#71C4D5',
       borderWidth: 1,
       cornerRadius: 8,
       displayColors: true,

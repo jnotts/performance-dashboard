@@ -55,7 +55,7 @@ const resetFilters = () => {
 
 // Department colors for consistent styling
 const departmentColors = {
-  Sales: '#3b82f6',
+  Sales: '#71C4D5',
   Support: '#10b981',
   Engineering: '#8b5cf6',
   Marketing: '#f59e0b',
@@ -164,7 +164,7 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
       titleColor: '#ffffff',
       bodyColor: '#ffffff',
-      borderColor: '#3b82f6',
+      borderColor: '#71C4D5',
       borderWidth: 1,
       cornerRadius: 8,
       displayColors: true,
@@ -208,6 +208,7 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
       }
     },
     y: {
+      max: 100,
       grid: {
         color: 'rgba(107, 114, 128, 0.1)',
       },
