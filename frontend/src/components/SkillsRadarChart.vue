@@ -1,5 +1,8 @@
 <template>
   <div class="chart-wrapper">
+    <div class="chart-sub-header">
+      <span class="chart-info">Understand skill distribution across departments</span>
+    </div>
     <Radar v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" />
     <div v-else class="chart-skeleton">
       <div class="empty-radar">
@@ -32,7 +35,7 @@ import {
   type ChartData,
   type TooltipItem
 } from 'chart.js'
-import type { ApiResponse } from '@/utils/types'
+import type { InsightsResponse } from '@/utils/types'
 import { CHART_CONFIG, getDeptColors } from '@/utils/chartConfig'
 
 // Register Chart.js components
@@ -47,7 +50,7 @@ ChartJS.register(
 
 // Accept data as prop
 interface Props {
-  data?: ApiResponse
+  data?: InsightsResponse
 }
 
 const props = defineProps<Props>()
@@ -90,6 +93,7 @@ const chartData = computed((): ChartData<'radar'> | null => {
 
 const chartOptions = computed((): ChartOptions<'radar'> => ({
   ...CHART_CONFIG.base,
+  layout: { padding: { bottom: 30 } },
   plugins: {
     legend: { ...CHART_CONFIG.legend, position: 'bottom' },
     tooltip: {

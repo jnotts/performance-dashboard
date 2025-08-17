@@ -1,10 +1,9 @@
 <template>
   <div class="chart-wrapper">
     <div v-if="chartData && chartOptions" class="chart-container">
-      <!-- <div class="chart-sub-header">
-        <span class="chart-info">Compare overall score with completion time across departments</span>
-        <span class="legend-hint">💡 Click legend items to toggle departments</span>
-      </div> -->
+      <div class="chart-sub-header">
+        <span class="chart-info">How do overall scores vary with completion time?</span>
+      </div>
       <Scatter ref="chartRef" :data="chartData" :options="chartOptions" />
     </div>
     <div v-else>No data available</div>
@@ -24,7 +23,7 @@ import {
   type ChartData,
   type TooltipItem
 } from 'chart.js'
-import type { ApiResponse } from '@/utils/types'
+import type { InsightsResponse } from '@/utils/types'
 import { CHART_CONFIG, getDeptColor } from '@/utils/chartConfig'
 
 // Register Chart.js components
@@ -37,7 +36,7 @@ ChartJS.register(
 
 // Accept data as prop
 interface Props {
-  data?: ApiResponse
+  data?: InsightsResponse
 }
 
 const props = defineProps<Props>()
@@ -97,7 +96,7 @@ const chartData = computed((): ChartData<'scatter'> | null => {
 
 const chartOptions = computed((): ChartOptions<'scatter'> => ({
   ...CHART_CONFIG.base,
-  // layout: { padding: { bottom: 40 } },
+  layout: { padding: { bottom: 30 } },
   plugins: {
     legend: {
       ...CHART_CONFIG.legend,

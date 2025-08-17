@@ -74,7 +74,7 @@ export interface AppliedFilters {
   endDate: string | null
 }
 
-export interface ApiResponse {
+export interface InsightsResponse {
   insights: Insights
   rawTrainingData: TrainingData
   appliedFilters: AppliedFilters

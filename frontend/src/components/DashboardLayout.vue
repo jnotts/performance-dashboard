@@ -5,60 +5,75 @@
       v-model:selected-department="selectedDepartment" />
 
     <!-- Error state -->
-    <div v-if="error" class="error-message">
-      Error loading data: {{ error.message }}
+    <div v-if="insightsError" class="error-message">
+      Error loading insightData: {{ insightsError.message }}
     </div>
 
     <!-- Compact stats cards -->
-    <div class="stats-grid" :class="{ 'loading': isLoading }">
-      <StatsCard title="Total Sessions" :value="totalSessions" />
-      <StatsCard title="Pass Rate" :value="passRate" />
-      <StatsCard title="Avg Score" :value="avgScore" />
-      <StatsCard title="Departments" :value="departmentCount" />
+    <div class="stats-grid" :class="{ 'loading': insightsLoading }">
+      <StatsCard title="Total Sessions" :value="totalSessions" icon="📊" />
+      <StatsCard title="Pass Rate" :value="passRate" icon="✅" />
+      <StatsCard title="Avg Score" :value="avgScore" icon="🎯" />
+      <StatsCard title="Top Performing Skill" :value="topSkill" icon="🏆" />
     </div>
 
     <!-- Charts quadrant layout -->
-    <div class="quadrant" :class="{ 'loading': isLoading }">
-      <ChartContainer title="Performance Trends" class="performance-trends">
-        <PerformanceTrendChart :data="data" />
-      </ChartContainer>
-
+    <div class="quadrant" :class="{ 'loading': insightsLoading }">
       <div class="ai-insights">
         <div class="ai-insights-header">
           <h3>AI Insights</h3>
           <div class="ai-status">
             <div class="ai-indicator"></div>
-            <span>Analyzing...</span>
+            <span v-if="aiInsightsLoading">Analyzing...</span>
+            <!-- <span v-else-if="aiInsightsError"></span> -->
+            <span v-else-if="aiInsights">Analyzed!</span>
           </div>
         </div>
         <div class="ai-insights-content">
-          <div class="insight-item">
-            <div class="insight-icon">💡</div>
+          <!-- Loading state -->
+          <div v-if="aiInsightsLoading" class="insight-item">
+            <div class="insight-icon">⏳</div>
             <div class="insight-text">
-              <p><strong>Engineering excelling:</strong> 95% average performance, +12% vs last month</p>
+              <p>Generating AI insights for your team...</p>
             </div>
           </div>
-          <div class="insight-item">
-            <div class="insight-icon">📈</div>
+
+          <!-- AI insights loop -->
+          <div v-else-if="aiInsights" v-for="(insight, index) in aiInsights" :key="index" class="insight-item">
+            <div class="insight-icon">{{ getInsightIcon(index) }}</div>
             <div class="insight-text">
-              <p><strong>Improvement trend:</strong> All departments showing positive growth</p>
+              <p>{{ insight }}</p>
             </div>
           </div>
-          <div class="insight-item">
-            <div class="insight-icon">⚠️</div>
+
+          <!-- Error state -->
+          <div v-else-if="aiInsightsError" class="insight-item error">
+            <div class="insight-icon">❌</div>
             <div class="insight-text">
-              <p><strong>Focus area:</strong> Operations problem-solving scores need attention</p>
+              <p>Failed to generate AI insights</p>
+            </div>
+          </div>
+
+          <!-- Fallback empty state -->
+          <div v-else class="insight-item">
+            <div class="insight-icon">💭</div>
+            <div class="insight-text">
+              <p>No insights available yet</p>
             </div>
           </div>
         </div>
       </div>
 
+      <ChartContainer title="Performance Trends" class="performance-trends">
+        <PerformanceTrendChart :data="insightData" />
+      </ChartContainer>
+
       <ChartContainer title="Skills Comparison" class="skills-comparison">
-        <SkillsRadarChart :data="data" />
+        <SkillsRadarChart :data="insightData" />
       </ChartContainer>
 
       <ChartContainer title="Performance vs Time" class="performance-scatter">
-        <PerformanceScatterChart :data="data" />
+        <PerformanceScatterChart :data="insightData" />
       </ChartContainer>
     </div>
   </div>
@@ -74,6 +89,7 @@ import PerformanceScatterChart from './PerformanceScatterChart.vue'
 import DashboardHeader from './DashboardHeader.vue'
 import { useInsights } from '@/composables/useInsights';
 import type { FilterParams } from '@/utils/types';
+import { useAiInsights } from '@/composables/useAiInsights';
 
 // Filter state
 const selectedDepartment = ref('')
@@ -87,32 +103,50 @@ const currentFilters = computed(() => ({
   endDate: endDate.value || undefined
 }) as FilterParams)
 
-// Fetch data with filters
-const { data, isLoading, error } = useInsights(currentFilters);
+// Fetch insightData with filters
+const {
+  data: insightData,
+  isLoading: insightsLoading,
+  error: insightsError
+} = useInsights(currentFilters);
+
+const {
+  data: aiInsights,
+  isLoading: aiInsightsLoading,
+  error: aiInsightsError
+} = useAiInsights(insightData);
 
 // Computed stats for the cards with fallbacks
 const totalSessions = computed(() => {
-  if (isLoading.value && !data.value) return "Loading..."
-  return data.value?.insights.totalSessions ?? 0
+  if (insightsLoading.value && !insightData.value) return "Loading..."
+  return insightData.value?.insights.totalSessions ?? 0
 });
 
 const passRate = computed(() => {
-  if (isLoading.value && !data.value) return "Loading..."
-  const rate = data.value?.insights.overallPassRate ?? 0;
+  if (insightsLoading.value && !insightData.value) return "Loading..."
+  const rate = insightData.value?.insights.overallPassRate ?? 0;
   return `${Math.round(rate * 100)}%`;
 });
 
 const avgScore = computed(() => {
-  if (isLoading.value && !data.value) return "Loading..."
-  const avg = (data.value?.insights.averageScore ?? 0)
+  if (insightsLoading.value && !insightData.value) return "Loading..."
+  const avg = (insightData.value?.insights.averageScore ?? 0)
   return Math.round(avg * 10) / 10;
 });
 
-const departmentCount = computed(() => {
-  if (isLoading.value && !data.value) return "Loading..."
-  const departments = new Set(data.value?.rawTrainingData.sessions.map(s => s.department) ?? []);
-  return departments.size;
+const topSkill = computed(() => {
+  if (insightsLoading.value && !insightData.value) return "Loading..."
+  const topSkills = insightData.value?.insights.topPerformingSkills ?? [];
+  if (topSkills.length === 0) return "None";
+  const skill = topSkills[0].skill;
+  return skill.charAt(0).toUpperCase() + skill.slice(1).replace(/([A-Z])/g, ' $1');
 });
+
+// Function to get different icons for each insight
+const getInsightIcon = (index: number) => {
+  const icons = ['💡', '📈', '⚠️', '🎯', '📊', '🔍'];
+  return icons[index % icons.length];
+};
 
 </script>
 
@@ -130,7 +164,7 @@ const departmentCount = computed(() => {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   transition: opacity 0.3s ease;
 }
 
@@ -156,16 +190,18 @@ const departmentCount = computed(() => {
 .performance-trends {
   grid-column: span 5;
 }
+
 .skills-comparison {
   grid-column: span 3;
 }
+
 .performance-scatter {
   grid-column: span 5;
 }
+
 /* AI Insights */
 .ai-insights {
   grid-column: span 3;
-
   background: white;
   border-radius: 12px;
   padding: 24px;
@@ -183,7 +219,7 @@ const departmentCount = computed(() => {
 }
 
 .ai-insights-header h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #1f2937;
   margin: 0;
@@ -226,27 +262,65 @@ const departmentCount = computed(() => {
 .insight-item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
-  border-left: 3px solid #71C4D5;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.insight-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+}
+
+.insight-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
 }
 
 .insight-icon {
-  font-size: 16px;
-  margin-top: 2px;
+  font-size: 20px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.insight-text {
+  flex: 1;
 }
 
 .insight-text p {
   margin: 0;
   font-size: 14px;
-  line-height: 1.5;
-  color: #374151;
+  line-height: 1.6;
+  color: #475569;
+  font-weight: 400;
 }
 
 .insight-text strong {
-  color: #1f2937;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.insight-item.error {
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+  border-color: #fca5a5;
+}
+
+.insight-item.error::before {
+  background: linear-gradient(to bottom, #ef4444, #dc2626);
 }
 
 /* Responsive Design */
@@ -260,10 +334,11 @@ const departmentCount = computed(() => {
     grid-template-rows: auto;
   }
 
-  .quad-1,
-  .quad-2,
-  .quad-3,
-  .quad-4 {
+
+  .performance-trends,
+  .skills-comparison,
+  .performance-scatter,
+  .ai-insights {
     grid-area: auto;
   }
 }

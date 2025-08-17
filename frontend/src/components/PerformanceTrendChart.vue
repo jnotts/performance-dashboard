@@ -1,7 +1,7 @@
 <template>
   <div class="chart-wrapper">
     <div class="chart-sub-header">
-      <span class="chart-info">Compare your team's performance over time and compare skill trends</span>
+      <span class="chart-info">Compare your team's performance and skill trends</span>
       <span class="legend-hint">💡 Click legend items to toggle departments</span>
     </div>
     <Line v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" />
@@ -26,7 +26,7 @@ import {
   type TooltipItem,
   type ChartData
 } from 'chart.js'
-import type { ApiResponse } from '@/utils/types'
+import type { InsightsResponse } from '@/utils/types'
 import { CHART_CONFIG } from '@/utils/chartConfig'
 
 // Register Chart.js components
@@ -43,7 +43,7 @@ ChartJS.register(
 
 // Accept data as prop
 interface Props {
-  data?: ApiResponse
+  data?: InsightsResponse
 }
 
 const props = defineProps<Props>()

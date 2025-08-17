@@ -28,12 +28,14 @@
 .chart-info {
   font-size: 11px;
   color: #4b5563;
+  padding: 0px 4px
 }
 
 .legend-hint {
   font-size: 10px;
   color: #6b7280;
   font-style: italic;
+  text-align: right;
 }
 
 .legend-btn {

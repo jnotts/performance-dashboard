@@ -13,7 +13,6 @@
           <input v-model="localEndDate" type="date" />
         </div>
       </div>
-
       <div class="filter-row">
         <button v-if="hasFilters" @click="clearAllFilters" class="clear">
           Clear Filters
@@ -21,8 +20,8 @@
         <button @click="setLast7Days" :class="{ active: isLast7DaysActiveLocal }">
           Last 7 days
         </button>
-        <button @click="setThisMonth" :class="{ active: isThisMonthActiveLocal }">
-          This month
+        <button @click="setLastMonth" :class="{ active: isLastMonthActiveLocal }">
+          Last Month
         </button>
         <select class="dropdown" v-model="localSelectedDepartment">
           <option value="">All Departments</option>
@@ -82,17 +81,20 @@ const activeQuickFilter = computed(() => {
   const today = new Date()
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(today.getDate() - 7)
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+
+  // Last 30 days dates
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(today.getDate() - 30)
 
   const todayStr = formatDateForInput(today)
   const sevenDaysAgoStr = formatDateForInput(sevenDaysAgo)
-  const firstOfMonthStr = formatDateForInput(firstOfMonth)
+  const thirtyDaysAgoStr = formatDateForInput(thirtyDaysAgo)
 
   if (props.startDate === sevenDaysAgoStr && props.endDate === todayStr) {
     return 'last7days'
   }
-  if (props.startDate === firstOfMonthStr && props.endDate === todayStr) {
-    return 'thismonth'
+  if (props.startDate === thirtyDaysAgoStr && props.endDate === todayStr) {
+    return 'lastmonth'
   }
   return null
 })
@@ -130,24 +132,25 @@ const setLast7Days = () => {
   }
 }
 
-const setThisMonth = () => {
-  if (activeQuickFilter.value === 'thismonth') {
+const setLastMonth = () => {
+  if (activeQuickFilter.value === 'lastmonth') {
     // Clear if already active
     emit('update:startDate', '')
     emit('update:endDate', '')
   } else {
-    // Set this month filter
+    // Set last 30 days filter
     const today = new Date()
-    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(today.getDate() - 30)
 
-    emit('update:startDate', formatDateForInput(firstOfMonth))
+    emit('update:startDate', formatDateForInput(thirtyDaysAgo))
     emit('update:endDate', formatDateForInput(today))
   }
 }
 
 // Button active states
 const isLast7DaysActiveLocal = computed(() => activeQuickFilter.value === 'last7days')
-const isThisMonthActiveLocal = computed(() => activeQuickFilter.value === 'thismonth')
+const isLastMonthActiveLocal = computed(() => activeQuickFilter.value === 'lastmonth')
 
 // Format date for display
 const formatDate = (date: Date) => {
@@ -189,13 +192,13 @@ const formatDate = (date: Date) => {
 .header-right {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   align-items: flex-end;
 }
 
 .filter-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
 

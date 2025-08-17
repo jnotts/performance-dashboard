@@ -1,6 +1,9 @@
 <template>
   <div class="stats-card">
-    <h3 class="stats-title">{{ title }}</h3>
+    <h3 class="stats-title">
+      <span v-if="icon" class="stats-icon">{{ icon }}</span>
+      {{ title }}
+    </h3>
     <div class="stats-value">{{ value }}</div>
   </div>
 </template>
@@ -9,6 +12,7 @@
 interface Props {
   title: string
   value: string | number
+  icon?: string
 }
 
 defineProps<Props>()
@@ -43,5 +47,10 @@ defineProps<Props>()
   font-weight: 700;
   color: #1f2937;
   line-height: 1;
+}
+
+.stats-icon {
+  margin-right: 6px;
+  font-size: 16px;
 }
 </style>
