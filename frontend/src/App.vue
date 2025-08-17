@@ -13,6 +13,6 @@ import DashboardLayout from './components/DashboardLayout.vue'
 <style scoped>
 .main-content {
   flex: 1;
-  padding: 24px;
+  padding: 16px 24px;
 }
 </style>

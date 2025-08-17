@@ -33,6 +33,7 @@ import {
   type TooltipItem
 } from 'chart.js'
 import type { ApiResponse } from '@/utils/types'
+import { CHART_CONFIG, getDeptColors } from '@/utils/chartConfig'
 
 // Register Chart.js components
 ChartJS.register(
@@ -51,15 +52,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Department colors for consistent styling
-const departmentColors = {
-  Sales: { bg: 'rgba(113, 196, 213, 0.2)', border: '#71C4D5' },
-  Support: { bg: 'rgba(16, 185, 129, 0.2)', border: '#10b981' },
-  Engineering: { bg: 'rgba(139, 92, 246, 0.2)', border: '#8b5cf6' },
-  Marketing: { bg: 'rgba(245, 158, 11, 0.2)', border: '#f59e0b' },
-  Operations: { bg: 'rgba(239, 68, 68, 0.2)', border: '#ef4444' },
-  default: { bg: 'rgba(107, 114, 128, 0.2)', border: '#6b7280' }
-}
 
 const chartData = computed((): ChartData<'radar'> | null => {
   if (!props.data?.insights.averageScoresByDepartment.length) return null
@@ -70,7 +62,7 @@ const chartData = computed((): ChartData<'radar'> | null => {
   return {
     labels: skillLabels,
     datasets: departmentStats.map(dept => {
-      const colors = departmentColors[dept.department as keyof typeof departmentColors] || departmentColors.default
+      const colors = getDeptColors(dept.department)
 
       return {
         label: dept.department,
@@ -97,36 +89,14 @@ const chartData = computed((): ChartData<'radar'> | null => {
 })
 
 const chartOptions = computed((): ChartOptions<'radar'> => ({
-  responsive: true,
-  maintainAspectRatio: false,
+  ...CHART_CONFIG.base,
   plugins: {
-    legend: {
-      position: 'bottom',
-      labels: {
-        padding: 20,
-        usePointStyle: true,
-        font: {
-          size: 10,
-          weight: 500
-        },
-        color: '#374151'
-      }
-    },
+    legend: { ...CHART_CONFIG.legend, position: 'bottom' },
     tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      titleColor: '#ffffff',
-      bodyColor: '#ffffff',
-      borderColor: '#71C4D5',
-      borderWidth: 1,
-      cornerRadius: 8,
-      displayColors: true,
+      ...CHART_CONFIG.tooltip,
       callbacks: {
-        title: (context: TooltipItem<'radar'>[]) => {
-          return `${context[0].dataset.label} Department`
-        },
-        label: (context: TooltipItem<'radar'>) => {
-          return `${context.label}: ${context.parsed.r}%`
-        }
+        title: (context: TooltipItem<'radar'>[]) => `${context[0].dataset.label} Department`,
+        label: (context: TooltipItem<'radar'>) => `${context.label}: ${context.parsed.r}%`
       }
     }
   },
@@ -163,31 +133,12 @@ const chartOptions = computed((): ChartOptions<'radar'> => ({
         callback: (value) => `${value}%`
       }
     }
-  },
-  interaction: {
-    intersect: false,
-    mode: 'point'
-  },
-  animation: {
-    duration: 1000,
-    easing: 'easeInOutQuart'
   }
 }))
 </script>
 
 <style scoped>
-.chart-wrapper {
-  position: relative;
-  height: 400px;
-  width: 100%;
-}
-
-.chart-skeleton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
+@import '@/styles/chartStyles.css';
 
 .empty-radar {
   position: relative;

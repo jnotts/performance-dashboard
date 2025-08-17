@@ -45,6 +45,12 @@ export interface TrendData {
   date: string
   averageScore: number
   sessionCount: number
+  skillAverages: {
+    communication: number
+    problemSolving: number
+    productKnowledge: number
+    customerService: number
+  }
 }
 
 export interface Insights {

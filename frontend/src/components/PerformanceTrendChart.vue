@@ -23,6 +23,7 @@ import {
   type ChartData
 } from 'chart.js'
 import type { ApiResponse } from '@/utils/types'
+import { CHART_CONFIG } from '@/utils/chartConfig'
 
 // Register Chart.js components
 ChartJS.register(
@@ -53,6 +54,17 @@ const chartData = computed((): ChartData<'line'> | null => {
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 
+  // Skill colors
+  const skillColors = {
+    communication: '#10b981',
+    problemSolving: '#8b5cf6',
+    productKnowledge: '#f59e0b',
+    customerService: '#ef4444'
+  }
+
+  // Get skill names from first trend item
+  const skillNames = sortedTrends[0]?.skillAverages ? Object.keys(sortedTrends[0].skillAverages) : []
+
   return {
     labels: sortedTrends.map(trend => {
       const date = new Date(trend.date)
@@ -63,133 +75,82 @@ const chartData = computed((): ChartData<'line'> | null => {
     }),
     datasets: [
       {
-        label: 'Average Score',
+        label: 'Overall Score',
         data: sortedTrends.map(trend => Math.round(trend.averageScore * 10) / 10),
-        borderColor: '#71C4D5',
-        backgroundColor: 'rgba(113, 196, 213, 0.1)',
-        borderWidth: 2,
+        borderColor: '#1e3a8a',
+        backgroundColor: '#1e3a8a10',
         fill: true,
+        borderWidth: 2,
         tension: 0.4,
-        pointBackgroundColor: '#71C4D5',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#5DB5C7',
-        pointHoverBorderColor: '#ffffff',
-        pointHoverBorderWidth: 2,
-      }
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointBackgroundColor: '#1e3a8a',
+        pointHoverBorderWidth: 3,
+        order: 1, // Render on top
+      },
+      // Add skill average lines (hidden by default)
+      ...skillNames.map(skill => ({
+        label: skill.charAt(0).toUpperCase() + skill.slice(1).replace(/([A-Z])/g, ' $1'),
+        data: sortedTrends.map(trend => Math.round(trend.skillAverages[skill as keyof typeof trend.skillAverages] * 10) / 10),
+        borderColor: skillColors[skill as keyof typeof skillColors] || '#6b7280',
+        backgroundColor: 'transparent',
+        fill: false,
+        borderWidth: 1, 
+        tension: 0.4,
+        pointRadius: 2,
+        pointHoverRadius: 3,
+        hidden: true, // Hide by default
+        order: 2, // Render behind main line
+      }))
     ]
   }
 })
 
 const chartOptions = computed((): ChartOptions<'line'> => ({
-  responsive: true,
-  maintainAspectRatio: false,
+  ...CHART_CONFIG.base,
+  interaction: {
+    intersect: false,
+    mode: 'index' // better ux hover
+  },
   plugins: {
-    legend: {
-      position: 'bottom',
-      labels: {
-        padding: 20,
-        usePointStyle: true,
-        font: {
-          size: 10,
-          weight: 500
-        },
-        color: '#374151'
-      }
-    },
+    legend: { ...CHART_CONFIG.legend, position: 'bottom' },
+
     tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      titleColor: '#ffffff',
-      bodyColor: '#ffffff',
-      borderColor: '#71C4D5',
-      borderWidth: 1,
-      cornerRadius: 8,
-      displayColors: false,
+      ...CHART_CONFIG.tooltip,
+      displayColors: true,
       callbacks: {
-        title: (context: TooltipItem<'line'>[]) => {
-          return `Date: ${context[0].label}`
-        },
+        title: (context: TooltipItem<'line'>[]) => `Date: ${context[0].label}`,
         label: (context: TooltipItem<'line'>) => {
+          return `${context.dataset.label}: ${context.parsed.y}%`
+        },
+        afterBody: (context: TooltipItem<'line'>[]) => {
           const sessionCount = props.data?.insights.recentTrends.find(
             trend => new Date(trend.date).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric'
-            }) === context.label
+              month: 'short', day: 'numeric'
+            }) === context[0].label
           )?.sessionCount || 0
-
-          return [
-            `Average Score: ${context.parsed.y}`,
-            `Sessions: ${sessionCount}`
-          ]
+          return [`Sessions: ${sessionCount}`]
         }
       }
     }
   },
   scales: {
     x: {
-      grid: {
-        color: 'rgba(107, 114, 128, 0.1)',
-      },
-      ticks: {
-        color: '#6b7280',
-        font: {
-          size: 12,
-          weight: 500
-        }
-      },
-      title: {
-        display: true,
-        text: 'Date',
-        color: '#6b7280',
-        font: {
-          size: 14,
-          weight: 'bold'
-        },
-      }
+      grid: CHART_CONFIG.grid,
+      ticks: CHART_CONFIG.ticks,
+      title: { ...CHART_CONFIG.axisTitle, text: 'Date' }
     },
     y: {
       beginAtZero: false,
-      // min: 0, // todo: make dynamic
       max: 100,
-      grid: {
-        color: 'rgba(107, 114, 128, 0.1)',
-      },
-      ticks: {
-        color: '#6b7280',
-        font: {
-          size: 12,
-          weight: 500
-        },
-        callback: (value) => `${value}%`
-      },
-      title: {
-        display: true,
-        text: 'Average Score',
-        color: '#6b7280',
-        font: {
-          size: 14,
-          weight: 'bold'
-        },
-      }
+      grid: CHART_CONFIG.grid,
+      ticks: { ...CHART_CONFIG.ticks, callback: (value) => `${value}%` },
+      title: { ...CHART_CONFIG.axisTitle, text: 'Average Score' }
     }
-  },
-  interaction: {
-    intersect: false,
-    mode: 'index' as const
-  },
-  animation: {
-    duration: 1000,
-    easing: 'easeInOutQuart' as const
   }
 }))
 </script>
 
 <style scoped>
-.chart-wrapper {
-  position: relative;
-  height: 400px;
-  width: 100%;
-}
+@import '@/styles/chartStyles.css';
 </style>

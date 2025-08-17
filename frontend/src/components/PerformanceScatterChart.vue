@@ -25,6 +25,7 @@ import {
   type TooltipItem
 } from 'chart.js'
 import type { ApiResponse } from '@/utils/types'
+import { CHART_CONFIG, getDeptColor } from '@/utils/chartConfig'
 
 // Register Chart.js components
 ChartJS.register(
@@ -53,15 +54,6 @@ const resetFilters = () => {
   }
 }
 
-// Department colors for consistent styling
-const departmentColors = {
-  Sales: '#71C4D5',
-  Support: '#10b981',
-  Engineering: '#8b5cf6',
-  Marketing: '#f59e0b',
-  Operations: '#ef4444',
-  default: '#6b7280'
-}
 
 const chartData = computed((): ChartData<'scatter'> | null => {
   if (!props.data?.rawTrainingData.sessions) return null
@@ -85,41 +77,33 @@ const chartData = computed((): ChartData<'scatter'> | null => {
   })
 
   return {
-    datasets: Object.entries(departmentGroups).map(([department, points]) => ({
-      label: department,
-      data: points,
-      pointStyle: points.map(point => point.pass ? 'circle' : 'crossRot'),
-      backgroundColor: (departmentColors[department as keyof typeof departmentColors] || departmentColors.default) + '80',
-      borderColor: departmentColors[department as keyof typeof departmentColors] || departmentColors.default,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      pointBorderWidth: 1,
-      pointHoverBorderWidth: 2,
-      pointHoverBackgroundColor: departmentColors[department as keyof typeof departmentColors] || departmentColors.default,
-      // pointHoverBorderColor: '#ffffff',
-    }))
+    datasets: Object.entries(departmentGroups).map(([department, points]) => {
+      const color = getDeptColor(department)
+      return {
+        label: department,
+        data: points,
+        pointStyle: points.map(point => point.pass ? 'circle' : 'crossRot'),
+        backgroundColor: color + '80',
+        borderColor: color,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBorderWidth: 1,
+        pointHoverBorderWidth: 2,
+        pointHoverBackgroundColor: color,
+      }
+    })
   }
 })
 
 const chartOptions = computed((): ChartOptions<'scatter'> => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  layout: {
-    padding: {
-      bottom: 40
-    }
-  },
+  ...CHART_CONFIG.base,
+  layout: { padding: { bottom: 40 }},
   plugins: {
     legend: {
+      ...CHART_CONFIG.legend,
       position: 'bottom',
       labels: {
-        padding: 20,
-        usePointStyle: true,
-        font: {
-          size: 10,
-          weight: 500
-        },
-        color: '#374151',
+        ...CHART_CONFIG.legend.labels,
         generateLabels: (chart) => {
           const labels = ChartJS.defaults.plugins.legend.labels.generateLabels(chart)
 
@@ -161,13 +145,7 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
       // }
     },
     tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      titleColor: '#ffffff',
-      bodyColor: '#ffffff',
-      borderColor: '#71C4D5',
-      borderWidth: 1,
-      cornerRadius: 8,
-      displayColors: true,
+      ...CHART_CONFIG.tooltip,
       callbacks: {
         title: () => 'Training Session',
         label: (context: TooltipItem<'scatter'>) => {
@@ -186,113 +164,20 @@ const chartOptions = computed((): ChartOptions<'scatter'> => ({
     x: {
       type: 'linear',
       position: 'bottom',
-      grid: {
-        color: 'rgba(107, 114, 128, 0.1)',
-      },
-      ticks: {
-        color: '#6b7280',
-        font: {
-          size: 12,
-          weight: 500
-        },
-        callback: (value) => `${value}min`
-      },
-      title: {
-        display: true,
-        text: 'Completion Time (minutes)',
-        color: '#374151',
-        font: {
-          size: 14,
-          weight: 600
-        }
-      }
+      grid: CHART_CONFIG.grid,
+      ticks: { ...CHART_CONFIG.ticks, callback: (value) => `${value}min` },
+      title: { ...CHART_CONFIG.axisTitle, text: 'Completion Time (minutes)' }
     },
     y: {
       max: 100,
-      grid: {
-        color: 'rgba(107, 114, 128, 0.1)',
-      },
-      ticks: {
-        color: '#6b7280',
-        font: {
-          size: 12,
-          weight: 500
-        },
-        callback: (value) => `${value}%`
-      },
-      title: {
-        display: true,
-        text: 'Overall Score (%)',
-        color: '#374151',
-        font: {
-          size: 14,
-          weight: 600
-        }
-      }
+      grid: CHART_CONFIG.grid,
+      ticks: { ...CHART_CONFIG.ticks, callback: (value) => `${value}%` },
+      title: { ...CHART_CONFIG.axisTitle, text: 'Overall Score (%)' }
     }
-  },
-  interaction: {
-    intersect: false,
-    mode: 'point'
-  },
-  animation: {
-    duration: 1000,
-    easing: 'easeInOutQuart'
   },
 }))
 </script>
 
 <style scoped>
-.chart-wrapper {
-  position: relative;
-  height: 400px;
-  width: 100%;
-}
-
-.chart-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.legend-controls {
-  display: flex;
-  gap: 4px;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.legend-hint {
-  font-size: 11px;
-  color: #6b7280;
-  font-style: italic;
-}
-
-.legend-btn {
-  padding: 6px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #475569;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.legend-btn:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
-  color: #334155;
-}
-
-.legend-btn:active {
-  transform: translateY(1px);
-}
-
-/* .chart-container>div:last-child {
-  flex: 1;
-  min-height: 0;
-} */
+@import '@/styles/chartStyles.css';
 </style>

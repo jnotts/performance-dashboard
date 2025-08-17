@@ -101,29 +101,45 @@ export function getTopPerformingSkills(sessions: TrainingSession[]) {
 }
 
 /**
- * Get recent trends from the training sessions
+ * Get recent trends from the training sessions - stats by date
  * @param sessions - The array of training sessions
- * @returns An array of objects containing date, average score, and session count
+ * @returns An array of objects containing date, average score, session count, and daily skill averages
  */
 export function getRecentTrends(sessions: TrainingSession[]) {
-  // Sort sessions by date
-  const sortedSessions = sessions.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const dailyData: { [date: string]: TrainingSession[] } = {};
 
-  // Group by date and calculate daily averages
-  const dailyScores: { [key: string]: number[] } = {};
-
-  sortedSessions.forEach((session) => {
-    if (!dailyScores[session.date]) {
-      dailyScores[session.date] = [];
-    }
-    dailyScores[session.date].push(session.overallScore);
+  sessions.forEach((session) => {
+    dailyData[session.date] = dailyData[session.date] || [];
+    dailyData[session.date].push(session);
   });
 
-  return Object.entries(dailyScores).map(([date, scores]) => ({
-    date,
-    averageScore: scores.reduce((sum, score) => sum + score, 0) / scores.length,
-    sessionCount: scores.length,
-  }));
+  // helper function to get average from array
+  const getAvg = (arr: number[]) =>
+    arr.reduce((sum, val) => sum + val, 0) / arr.length;
+
+  // convert to array and sort by date -> [date, sessions[]] []
+  const sortedDates = Object.entries(dailyData).sort(
+    ([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime()
+  );
+
+  // calculate daily trends
+  return sortedDates.map(([date, daySessions]) => {
+    // calculate skill averages for this day
+    const skillAverages: { [skill: string]: number } = {};
+    const skillNames = Object.keys(daySessions[0].skills);
+
+    skillNames.forEach((skillName) => {
+      const skillScores = daySessions.map(
+        (session) => session.skills[skillName as keyof typeof session.skills]
+      );
+      skillAverages[skillName] = getAvg(skillScores);
+    });
+
+    return {
+      date,
+      averageScore: getAvg(daySessions.map((session) => session.overallScore)),
+      sessionCount: daySessions.length,
+      skillAverages,
+    };
+  });
 }

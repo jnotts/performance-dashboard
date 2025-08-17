@@ -17,53 +17,49 @@
       <StatsCard title="Departments" :value="departmentCount" />
     </div>
 
-    <!-- Charts layout: 2 on top, smaller chart + AI insights below -->
-    <div class="charts-container" :class="{ 'loading': isLoading }">
-      <div class="charts-row-main">
-        <ChartContainer title="Performance Trends" class="chart-main">
-          <PerformanceTrendChart :data="data" />
-        </ChartContainer>
+    <!-- Charts quadrant layout -->
+    <div class="quadrant" :class="{ 'loading': isLoading }">
+      <ChartContainer title="Performance Trends" class="performance-trends">
+        <PerformanceTrendChart :data="data" />
+      </ChartContainer>
 
-        <ChartContainer title="Skills Comparison" class="chart-main">
-          <SkillsRadarChart :data="data" />
-        </ChartContainer>
-      </div>
-
-      <div class="charts-row-secondary">
-        <ChartContainer title="Performance vs Time" class="chart-secondary">
-          <PerformanceScatterChart :data="data" />
-        </ChartContainer>
-
-        <div class="ai-insights-container">
-          <div class="ai-insights-header">
-            <h3>AI Insights</h3>
-            <div class="ai-status">
-              <div class="ai-indicator"></div>
-              <span>Analyzing...</span>
+      <div class="ai-insights">
+        <div class="ai-insights-header">
+          <h3>AI Insights</h3>
+          <div class="ai-status">
+            <div class="ai-indicator"></div>
+            <span>Analyzing...</span>
+          </div>
+        </div>
+        <div class="ai-insights-content">
+          <div class="insight-item">
+            <div class="insight-icon">💡</div>
+            <div class="insight-text">
+              <p><strong>Engineering excelling:</strong> 95% average performance, +12% vs last month</p>
             </div>
           </div>
-          <div class="ai-insights-content">
-            <div class="insight-item">
-              <div class="insight-icon">💡</div>
-              <div class="insight-text">
-                <p><strong>Engineering excelling:</strong> 95% average performance, +12% vs last month</p>
-              </div>
+          <div class="insight-item">
+            <div class="insight-icon">📈</div>
+            <div class="insight-text">
+              <p><strong>Improvement trend:</strong> All departments showing positive growth</p>
             </div>
-            <div class="insight-item">
-              <div class="insight-icon">📈</div>
-              <div class="insight-text">
-                <p><strong>Improvement trend:</strong> All departments showing positive growth</p>
-              </div>
-            </div>
-            <div class="insight-item">
-              <div class="insight-icon">⚠️</div>
-              <div class="insight-text">
-                <p><strong>Focus area:</strong> Operations problem-solving scores need attention</p>
-              </div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon">⚠️</div>
+            <div class="insight-text">
+              <p><strong>Focus area:</strong> Operations problem-solving scores need attention</p>
             </div>
           </div>
         </div>
       </div>
+
+      <ChartContainer title="Skills Comparison" class="skills-comparison">
+        <SkillsRadarChart :data="data" />
+      </ChartContainer>
+
+      <ChartContainer title="Performance vs Time" class="performance-scatter">
+        <PerformanceScatterChart :data="data" />
+      </ChartContainer>
     </div>
   </div>
 </template>
@@ -124,7 +120,7 @@ const departmentCount = computed(() => {
 .dashboard-layout {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 16px;
   background-color: #f8fafc;
   min-height: 100vh;
 }
@@ -133,8 +129,8 @@ const departmentCount = computed(() => {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 32px;
+  gap: 16px;
+  margin-bottom: 24px;
   transition: opacity 0.3s ease;
 }
 
@@ -143,42 +139,33 @@ const departmentCount = computed(() => {
   pointer-events: none;
 }
 
-/* Charts Container */
-.charts-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+/* Quadrant Layout */
+.quadrant {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: 16px;
   transition: opacity 0.3s ease;
 }
 
-.charts-container.loading {
+.quadrant.loading {
   opacity: 0.6;
   pointer-events: none;
 }
 
-.charts-row-main {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+.performance-trends {
+  grid-column: span 5;
 }
-
-.charts-row-secondary {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
+.skills-comparison {
+  grid-column: span 3;
 }
-
-.chart-main {
-  min-height: 400px;
+.performance-scatter {
+  grid-column: span 5;
 }
+/* AI Insights */
+.ai-insights {
+  grid-column: span 3;
 
-.chart-secondary {
-  min-height: 350px;
-}
-
-/* AI Insights Container */
-.ai-insights-container {
   background: white;
   border-radius: 12px;
   padding: 24px;
@@ -268,12 +255,16 @@ const departmentCount = computed(() => {
     padding: 16px;
   }
 
-  .charts-row-main {
+  .quadrant {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
   }
 
-  .charts-row-secondary {
-    grid-template-columns: 1fr;
+  .quad-1,
+  .quad-2,
+  .quad-3,
+  .quad-4 {
+    grid-area: auto;
   }
 }
 
