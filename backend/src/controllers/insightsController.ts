@@ -1,17 +1,10 @@
 import { Request, Response } from "express";
-import fs from "fs";
-import path from "path";
 import {
   getAverageScoresByDepartment,
   getTopPerformingSkills,
   getRecentTrends,
 } from "../utils/utils.js";
-import type { TrainingData } from "../utils/types.js";
-
-// read data at startup for now - avoid reading in each request
-const dataPath = path.join(process.cwd(), "training-data.json");
-const rawData = fs.readFileSync(dataPath, "utf-8");
-const trainingData: TrainingData = JSON.parse(rawData);
+import trainingData from "../../training-data.json" with { type: "json" };
 
 /**
  * get insights from the raw training data
