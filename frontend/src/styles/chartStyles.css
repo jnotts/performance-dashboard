@@ -1,7 +1,7 @@
 /* Chart Styles */
 .chart-wrapper {
   position: relative;
-  height: 400px;
+  height: 360px;
   width: 100%;
 }
 
@@ -18,11 +18,16 @@
   height: 100%;
 }
 
-.legend-controls {
+.chart-sub-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.chart-info {
+  font-size: 11px;
+  color: #4b5563;
 }
 
 .legend-hint {

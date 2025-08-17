@@ -1,10 +1,10 @@
 <template>
   <div class="chart-wrapper">
     <div v-if="chartData && chartOptions" class="chart-container">
-      <div class="legend-controls">
+      <!-- <div class="chart-sub-header">
+        <span class="chart-info">Compare overall score with completion time across departments</span>
         <span class="legend-hint">💡 Click legend items to toggle departments</span>
-        <button @click="resetFilters" class="legend-btn">Reset Legend</button>
-      </div>
+      </div> -->
       <Scatter ref="chartRef" :data="chartData" :options="chartOptions" />
     </div>
     <div v-else>No data available</div>
@@ -44,15 +44,15 @@ const props = defineProps<Props>()
 const chartRef = ref()
 
 // Functions to control all datasets
-const resetFilters = () => {
-  if (chartRef.value?.chart) {
-    const chart = chartRef.value.chart
-    chart.data.datasets.forEach((_: unknown, index: number) => {
-      chart.setDatasetVisibility(index, true)
-    })
-    chart.update()
-  }
-}
+// const resetFilters = () => {
+//   if (chartRef.value?.chart) {
+//     const chart = chartRef.value.chart
+//     chart.data.datasets.forEach((_: unknown, index: number) => {
+//       chart.setDatasetVisibility(index, true)
+//     })
+//     chart.update()
+//   }
+// }
 
 
 const chartData = computed((): ChartData<'scatter'> | null => {
@@ -97,7 +97,7 @@ const chartData = computed((): ChartData<'scatter'> | null => {
 
 const chartOptions = computed((): ChartOptions<'scatter'> => ({
   ...CHART_CONFIG.base,
-  layout: { padding: { bottom: 40 }},
+  // layout: { padding: { bottom: 40 } },
   plugins: {
     legend: {
       ...CHART_CONFIG.legend,

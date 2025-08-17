@@ -163,9 +163,20 @@ const chartOptions = computed((): ChartOptions<'radar'> => ({
   transform: translate(-50%, -50%);
 }
 
-.circle:nth-child(1) { width: 200px; height: 200px; }
-.circle:nth-child(2) { width: 133px; height: 133px; }
-.circle:nth-child(3) { width: 66px; height: 66px; }
+.circle:nth-child(1) {
+  width: 200px;
+  height: 200px;
+}
+
+.circle:nth-child(2) {
+  width: 133px;
+  height: 133px;
+}
+
+.circle:nth-child(3) {
+  width: 66px;
+  height: 66px;
+}
 
 .radar-lines {
   position: absolute;

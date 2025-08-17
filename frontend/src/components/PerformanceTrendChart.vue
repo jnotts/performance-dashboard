@@ -1,5 +1,9 @@
 <template>
   <div class="chart-wrapper">
+    <div class="chart-sub-header">
+      <span class="chart-info">Compare your team's performance over time and compare skill trends</span>
+      <span class="legend-hint">💡 Click legend items to toggle departments</span>
+    </div>
     <Line v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" />
     <div v-else>No data available</div>
   </div>
@@ -95,7 +99,7 @@ const chartData = computed((): ChartData<'line'> | null => {
         borderColor: skillColors[skill as keyof typeof skillColors] || '#6b7280',
         backgroundColor: 'transparent',
         fill: false,
-        borderWidth: 1, 
+        borderWidth: 1,
         tension: 0.4,
         pointRadius: 2,
         pointHoverRadius: 3,
@@ -108,6 +112,7 @@ const chartData = computed((): ChartData<'line'> | null => {
 
 const chartOptions = computed((): ChartOptions<'line'> => ({
   ...CHART_CONFIG.base,
+  layout: { padding: { bottom: 30 } },
   interaction: {
     intersect: false,
     mode: 'index' // better ux hover
