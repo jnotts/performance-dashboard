@@ -6,12 +6,7 @@ export interface TrainingSession {
   department: string
   date: string
   overallScore: number
-  skills: {
-    communication: number
-    problemSolving: number
-    productKnowledge: number
-    customerService: number
-  }
+  skills: { [key: string]: number }
   completionTime: number
   passed: boolean
 }
@@ -28,12 +23,7 @@ export interface DepartmentStats {
   department: string
   averageScore: number
   scores: number[]
-  skillAverages: {
-    communication: number
-    problemSolving: number
-    productKnowledge: number
-    customerService: number
-  }
+  skillAverages: { [key: string]: number }
 }
 
 export interface SkillStats {
@@ -45,12 +35,7 @@ export interface TrendData {
   date: string
   averageScore: number
   sessionCount: number
-  skillAverages: {
-    communication: number
-    problemSolving: number
-    productKnowledge: number
-    customerService: number
-  }
+  skillAverages: { [key: string]: number }
 }
 
 export interface Insights {
@@ -74,8 +59,14 @@ export interface AppliedFilters {
   endDate: string | null
 }
 
+export interface Metadata {
+  departments: string[]
+  skills: string[]
+}
+
 export interface InsightsResponse {
   insights: Insights
   rawTrainingData: TrainingData
   appliedFilters: AppliedFilters
+  metadata: Metadata
 }

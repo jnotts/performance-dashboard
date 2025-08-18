@@ -143,3 +143,26 @@ export function getRecentTrends(sessions: TrainingSession[]) {
     };
   });
 }
+
+/**
+ * Extract unique departments from training sessions
+ * @param sessions - The array of training sessions
+ * @returns Array of unique department names
+ */
+export function getUniqueDepartments(sessions: TrainingSession[]): string[] {
+  const departments = new Set(sessions.map((session) => session.department));
+  return Array.from(departments).sort();
+}
+
+/**
+ * Extract unique skills from training sessions
+ * @param sessions - The array of training sessions
+ * @returns Array of unique skill names
+ */
+export function getUniqueSkills(sessions: TrainingSession[]): string[] {
+  if (sessions.length === 0) return [];
+
+  // Get skill names from the first session (assuming all sessions have same skills)
+  const skillNames = Object.keys(sessions[0].skills);
+  return skillNames.sort();
+}

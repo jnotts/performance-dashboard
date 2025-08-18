@@ -2,7 +2,7 @@
   <div class="dashboard-layout">
     <!-- Dashboard Header Component -->
     <DashboardHeader v-model:start-date="startDate" v-model:end-date="endDate"
-      v-model:selected-department="selectedDepartment" />
+      v-model:selected-department="selectedDepartment" :departments="availableDepartments" />
 
     <!-- Error state -->
     <div v-if="insightsError" class="error-message">
@@ -68,19 +68,19 @@
         <PerformanceTrendChart :data="insightData" />
       </ChartContainer>
 
-      <ChartContainer title="Skills Comparison" class="skills-comparison">
-        <SkillsRadarChart :data="insightData" />
-      </ChartContainer>
-
       <ChartContainer title="Performance vs Time" class="performance-scatter">
         <PerformanceScatterChart :data="insightData" />
+      </ChartContainer>
+
+      <ChartContainer title="Skills Comparison" class="skills-comparison">
+        <SkillsRadarChart :data="insightData" />
       </ChartContainer>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import StatsCard from './StatsCard.vue'
 import ChartContainer from './ChartContainer.vue'
 import PerformanceTrendChart from './PerformanceTrendChart.vue'
@@ -102,6 +102,10 @@ const currentFilters = computed(() => ({
   startDate: startDate.value || undefined,
   endDate: endDate.value || undefined
 }) as FilterParams)
+
+watch(currentFilters, () => {
+  console.log('Filters updated:', currentFilters.value)
+})
 
 // Fetch insightData with filters
 const {
@@ -138,13 +142,18 @@ const topSkill = computed(() => {
   if (insightsLoading.value && !insightData.value) return "Loading..."
   const topSkills = insightData.value?.insights.topPerformingSkills ?? [];
   if (topSkills.length === 0) return "None";
-  const skill = topSkills[0].skill;
-  return skill.charAt(0).toUpperCase() + skill.slice(1).replace(/([A-Z])/g, ' $1');
+  const skill = topSkills[0].skill; // ordered in the backend
+  return skill.charAt(0).toUpperCase() + skill.slice(1).replace(/([A-Z])/g, ' $1'); // format from camelCase to Title Case
+});
+
+// Available departments from metadata
+const availableDepartments = computed(() => {
+  return insightData.value?.metadata.departments ?? [];
 });
 
 // Function to get different icons for each insight
 const getInsightIcon = (index: number) => {
-  const icons = ['💡', '📈', '⚠️', '🎯', '📊', '🔍'];
+  const icons = ['💡', '📈', '⚠️'];
   return icons[index % icons.length];
 };
 

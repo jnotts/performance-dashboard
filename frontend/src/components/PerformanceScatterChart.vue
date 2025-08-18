@@ -58,6 +58,7 @@ const chartData = computed((): ChartData<'scatter'> | null => {
   if (!props.data?.rawTrainingData.sessions) return null
 
   const sessions = props.data.rawTrainingData.sessions
+  const allDepartments = props.data.metadata.departments
 
   // Group by department for different colored datasets 
   const departmentGroups: { [key: string]: Array<{ x: number, y: number, pass: boolean }> } = {}
@@ -77,7 +78,7 @@ const chartData = computed((): ChartData<'scatter'> | null => {
 
   return {
     datasets: Object.entries(departmentGroups).map(([department, points]) => {
-      const color = getDeptColor(department)
+      const color = getDeptColor(department, allDepartments)
       return {
         label: department,
         data: points,

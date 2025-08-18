@@ -1,12 +1,22 @@
-// Department colors - single source of truth
-const DEPT_COLORS = {
-  Sales: '#71C4D5',
-  Support: '#10b981',
-  Engineering: '#8b5cf6',
-  Marketing: '#f59e0b',
-  Operations: '#ef4444',
-  default: '#6b7280',
-} as const
+// Predefined color palette for consistent assignment
+// const COLOR_PALETTE = [
+//   '#71C4D5', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444',
+//   '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1',
+//   '#14b8a6', '#eab308', '#f43f5e', '#8b5a2b', '#6b7280'
+// ]
+
+const COLOR_PALETTE = [
+  '#CC3333', // Red
+  '#CCCC33', // Yellow-Green
+  '#33CC33', // Green
+  '#33CCCC', // Cyan
+  '#3333CC', // Blue
+  '#CC33CC', // Magenta
+  '#CC3399', // Rose
+  '#9933CC', // Purple
+  '#3366CC', // Indigo
+  '#CC9933', // Orange
+]
 
 // Shared chart configurations
 export const CHART_CONFIG = {
@@ -20,7 +30,7 @@ export const CHART_CONFIG = {
     backgroundColor: '#000000cc',
     titleColor: '#ffffff',
     bodyColor: '#ffffff',
-    borderColor: DEPT_COLORS.Sales,
+    borderColor: COLOR_PALETTE[0],
     borderWidth: 1,
     cornerRadius: 8,
     displayColors: true,
@@ -38,11 +48,19 @@ export const CHART_CONFIG = {
   axisTitle: { display: true, color: '#374151', font: { size: 14, weight: 600 } },
 }
 
-// Helper functions
-export const getDeptColor = (dept: string): string =>
-  DEPT_COLORS[dept as keyof typeof DEPT_COLORS] || DEPT_COLORS.default
+// Helper functions for consistent color assignment
+export const getDeptColor = (dept: string, allDepartments: string[]): string => {
+  const index = allDepartments.indexOf(dept)
+  return COLOR_PALETTE[index % COLOR_PALETTE.length] || COLOR_PALETTE[COLOR_PALETTE.length - 1]
+}
 
-export const getDeptColors = (dept: string) => {
-  const color = getDeptColor(dept)
+export const getDeptColors = (dept: string, allDepartments: string[]) => {
+  const color = getDeptColor(dept, allDepartments)
   return { bg: color + '33', border: color }
+}
+
+// Dynamic color assignment for skills
+export const getSkillColor = (skill: string, allSkills: string[]): string => {
+  const index = allSkills.indexOf(skill)
+  return COLOR_PALETTE[index % COLOR_PALETTE.length] || '#6b7280'
 }

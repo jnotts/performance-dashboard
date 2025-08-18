@@ -24,7 +24,7 @@
       "sessionId": "550e8400-e29b-41d4-a716-446655440002",
       "userId": "user002",
       "userName": "Jane Smith",
-      "department": "Support",
+      "department": "Management",
       "date": "2025-06-17",
       "overallScore": 91,
       "skills": {
@@ -329,7 +329,7 @@
       "userId": "user021",
       "userName": "Samuel Allen",
       "department": "Operations",
-      "date": "2025-07-06",
+      "date": "2025-07-05",
       "overallScore": 67,
       "skills": {
         "communication": 70,
@@ -361,7 +361,7 @@
       "userId": "user023",
       "userName": "Victor King",
       "department": "Marketing",
-      "date": "2025-07-08",
+      "date": "2025-07-07",
       "overallScore": 76,
       "skills": {
         "communication": 81,
@@ -424,7 +424,7 @@
       "sessionId": "550e8400-e29b-41d4-a716-446655440027",
       "userId": "user002",
       "userName": "Jane Smith",
-      "department": "Support",
+      "department": "Management",
       "date": "2025-07-12",
       "overallScore": 94,
       "skills": {

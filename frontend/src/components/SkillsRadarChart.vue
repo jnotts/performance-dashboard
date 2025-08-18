@@ -36,7 +36,7 @@ import {
   type TooltipItem
 } from 'chart.js'
 import type { InsightsResponse } from '@/utils/types'
-import { CHART_CONFIG, getDeptColors } from '@/utils/chartConfig'
+import { CHART_CONFIG, getDeptColor } from '@/utils/chartConfig'
 
 // Register Chart.js components
 ChartJS.register(
@@ -60,30 +60,37 @@ const chartData = computed((): ChartData<'radar'> | null => {
   if (!props.data?.insights.averageScoresByDepartment.length) return null
 
   const departmentStats = props.data.insights.averageScoresByDepartment
-  const skillLabels = ['Communication', 'Problem\nSolving', 'Product\nKnowledge', 'Customer\nService']
+  const availableSkills = props.data.metadata.skills
+  const allDepartments = props.data.metadata.departments
+
+  // Generate skill labels with proper formatting
+  const skillLabels = availableSkills.map(skill =>
+    skill.charAt(0).toUpperCase() + skill.slice(1).replace(/([A-Z])/g, '\n$1')
+  )
 
   return {
     labels: skillLabels,
     datasets: departmentStats.map(dept => {
-      const colors = getDeptColors(dept.department)
+      const color = getDeptColor(dept.department, allDepartments)
+
+      // Dynamically extract skill values based on available skills
+      const skillData = availableSkills.map(skill => {
+        const value = dept.skillAverages[skill as keyof typeof dept.skillAverages]
+        return Math.round(value * 10) / 10
+      })
 
       return {
         label: dept.department,
-        data: [
-          Math.round(dept.skillAverages.communication * 10) / 10,
-          Math.round(dept.skillAverages.problemSolving * 10) / 10,
-          Math.round(dept.skillAverages.productKnowledge * 10) / 10,
-          Math.round(dept.skillAverages.customerService * 10) / 10
-        ],
-        backgroundColor: colors.bg,
-        borderColor: colors.border,
+        data: skillData,
+        backgroundColor: color + '33',
+        borderColor: color,
         borderWidth: 2,
-        pointBackgroundColor: colors.border,
+        pointBackgroundColor: color,
         pointBorderColor: '#ffffff',
         pointBorderWidth: 2,
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointHoverBackgroundColor: colors.border,
+        pointHoverBackgroundColor: color,
         pointHoverBorderColor: '#ffffff',
         pointHoverBorderWidth: 3,
       }

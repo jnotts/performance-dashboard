@@ -2,7 +2,7 @@
   <div class="chart-wrapper">
     <div class="chart-sub-header">
       <span class="chart-info">Compare your team's performance and skill trends</span>
-      <span class="legend-hint">💡 Click legend items to toggle departments</span>
+      <span class="legend-hint">💡 Click legend items to toggle skill trends</span>
     </div>
     <Line v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" />
     <div v-else>No data available</div>
@@ -27,7 +27,7 @@ import {
   type ChartData
 } from 'chart.js'
 import type { InsightsResponse } from '@/utils/types'
-import { CHART_CONFIG } from '@/utils/chartConfig'
+import { CHART_CONFIG, getSkillColor } from '@/utils/chartConfig'
 
 // Register Chart.js components
 ChartJS.register(
@@ -57,14 +57,6 @@ const chartData = computed((): ChartData<'line'> | null => {
   const sortedTrends = [...trends].sort((a, b) =>
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
-
-  // Skill colors
-  const skillColors = {
-    communication: '#10b981',
-    problemSolving: '#8b5cf6',
-    productKnowledge: '#f59e0b',
-    customerService: '#ef4444'
-  }
 
   // Get skill names from first trend item
   const skillNames = sortedTrends[0]?.skillAverages ? Object.keys(sortedTrends[0].skillAverages) : []
@@ -96,7 +88,7 @@ const chartData = computed((): ChartData<'line'> | null => {
       ...skillNames.map(skill => ({
         label: skill.charAt(0).toUpperCase() + skill.slice(1).replace(/([A-Z])/g, ' $1'),
         data: sortedTrends.map(trend => Math.round(trend.skillAverages[skill as keyof typeof trend.skillAverages] * 10) / 10),
-        borderColor: skillColors[skill as keyof typeof skillColors] || '#6b7280',
+        borderColor: getSkillColor(skill, skillNames),
         backgroundColor: 'transparent',
         fill: false,
         borderWidth: 1,

@@ -3,6 +3,8 @@ import {
   getAverageScoresByDepartment,
   getTopPerformingSkills,
   getRecentTrends,
+  getUniqueDepartments,
+  getUniqueSkills,
 } from "../utils/utils.js";
 import trainingData from "../../training-data.json" with { type: "json" };
 
@@ -56,6 +58,12 @@ export const getInsights = (req: Request, res: Response) => {
     recentTrends: getRecentTrends(filteredSessions),
   };
 
+  // Extract metadata from the original unfiltered data for complete lists
+  const metadata = {
+    departments: getUniqueDepartments(trainingData.sessions),
+    skills: getUniqueSkills(trainingData.sessions),
+  };
+
   return res.json({
     insights,
     rawTrainingData: {
@@ -67,5 +75,6 @@ export const getInsights = (req: Request, res: Response) => {
       startDate: startDate || null,
       endDate: endDate || null,
     },
+    metadata,
   });
 };

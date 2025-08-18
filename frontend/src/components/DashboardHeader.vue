@@ -25,7 +25,7 @@
         </button>
         <select class="dropdown" v-model="localSelectedDepartment">
           <option value="">All Departments</option>
-          <option v-for="dept in departments" :key="dept" :value="dept">{{ dept }}</option>
+          <option v-for="dept in props.departments" :key="dept" :value="dept">{{ dept }}</option>
         </select>
       </div>
     </div>
@@ -39,6 +39,7 @@ interface Props {
   startDate?: string
   endDate?: string
   selectedDepartment?: string
+  departments?: string[]
 }
 
 interface Emits {
@@ -50,13 +51,11 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   startDate: '',
   endDate: '',
-  selectedDepartment: ''
+  selectedDepartment: '',
+  departments: () => []
 })
 
 const emit = defineEmits<Emits>()
-
-// Available departments
-const departments = ['Sales', 'Support', 'Engineering', 'Marketing', 'Operations']
 
 // Use computed properties that directly work with props/emits
 const localStartDate = computed({
@@ -82,18 +81,19 @@ const activeQuickFilter = computed(() => {
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(today.getDate() - 7)
 
-  // Last 30 days dates
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(today.getDate() - 30)
+  // Last month dates
+  const firstOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+  const lastOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0)
 
   const todayStr = formatDateForInput(today)
   const sevenDaysAgoStr = formatDateForInput(sevenDaysAgo)
-  const thirtyDaysAgoStr = formatDateForInput(thirtyDaysAgo)
+  const firstOfLastMonthStr = formatDateForInput(firstOfLastMonth)
+  const lastOfLastMonthStr = formatDateForInput(lastOfLastMonth)
 
   if (props.startDate === sevenDaysAgoStr && props.endDate === todayStr) {
     return 'last7days'
   }
-  if (props.startDate === thirtyDaysAgoStr && props.endDate === todayStr) {
+  if (props.startDate === firstOfLastMonthStr && props.endDate === lastOfLastMonthStr) {
     return 'lastmonth'
   }
   return null
@@ -112,7 +112,10 @@ const clearAllFilters = () => {
 
 // Helper function to get local date string
 const formatDateForInput = (date: Date) => {
-  return date.toISOString().split('T')[0]
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 // Simple toggle functions
@@ -138,13 +141,13 @@ const setLastMonth = () => {
     emit('update:startDate', '')
     emit('update:endDate', '')
   } else {
-    // Set last 30 days filter
+    // Set last month filter (1st to last day of previous month)
     const today = new Date()
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(today.getDate() - 30)
+    const firstOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    const lastOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0)
 
-    emit('update:startDate', formatDateForInput(thirtyDaysAgo))
-    emit('update:endDate', formatDateForInput(today))
+    emit('update:startDate', formatDateForInput(firstOfLastMonth))
+    emit('update:endDate', formatDateForInput(lastOfLastMonth))
   }
 }
 
