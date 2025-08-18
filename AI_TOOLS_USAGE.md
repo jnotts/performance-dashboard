@@ -12,7 +12,7 @@ I find that AI tools not only allow for increased productivity and fast ideation
   - "initialize an express app in the backend directory using typescript. Just create a basic template server using src dir"
   - "observe the training data and create basic types/interfaces alongside an /api/insights endpoint. @backend/training-data.json"
 
-  ### Code Generation and Boilerplate
+### Code Generation and Boilerplate
 
 - **Tool**: Claude Code
 - **Task**: Boiler plate code generation - Vue app and dashboard template
@@ -21,7 +21,7 @@ I find that AI tools not only allow for increased productivity and fast ideation
 - **Example prompts**:
   - "remove the example vue app and create a boiler plate template for a dashboard. Create basic containers for components. I want a clean design with a header at the top,followed by some quick info cards, followed by the main grid of charts"
 
-  ### Code Completion - Rapid Charts Template Generation
+### Code Completion - Rapid Charts Template Generation
 
 - **Tool**: Claude Code
 - **Task**: Create a chart based on provided data structure and available insights composable
@@ -46,7 +46,7 @@ I find that AI tools not only allow for increased productivity and fast ideation
 - **Task**: Quickly generate types in frontend based on the already completed backend endpoint.
 - **Time Saved**: ~ 10mins
 
-### Problem Solving & Debugging 
+### Problem Solving & Debugging
 
 - **Tool**: Claude Code
 - **Task**: Fixed dashboard/charts re-rendering flash issue affecting entire page
@@ -55,17 +55,17 @@ I find that AI tools not only allow for increased productivity and fast ideation
 - **Solution**: Was conditionally rendering the entire dashboard layout with isLoading states, moved loading states to appropriate/necessary components only. Now only data dependent components reload on filter changes.
 
 ### Refactoring / Clean Up / Organization
+
 - **Tool**: Claude Code
 - **Task 1**: Remove hard coded departments throughout the app, make dynamic
 - **Time Saved**: ~30 minutes
 - **Prompt**: I have hardcoded departments throughout the frontend and backend. Please remove the hardcoded departments and make them dynamic, so we can accommodate changes in data. Assume the skill sets stay the same, so skills can remain hardcoded for now.
-- **Notes**: worked pretty well first try but some department colours in the COLOR_PALETTE were too similar. Searched online for more diverse colour array (found very quickly) and updated manually. 
+- **Notes**: worked pretty well first try but some department colours in the COLOR_PALETTE were too similar. Searched online for more diverse colour array (found very quickly) and updated manually.
 
 - **Task 2**: Create shared styles/config for the charts to reuse
 - **Time Saved**: ~30 minutes
 - **Prompt**: extract the similar/common styles and config for each of the 3 charts and create utility files for these. Ensure chart styling and configuration is consistent, add any unique config to charts individually when necessary.
-- **Notes**: worked well, added/updated styling and configuration manually as and when needed (e.g. chart specific styling, slightly varied legend config etc.) 
-
+- **Notes**: worked well, added/updated styling and configuration manually as and when needed (e.g. chart specific styling, slightly varied legend config etc.)
 
 ### Data generation
 
