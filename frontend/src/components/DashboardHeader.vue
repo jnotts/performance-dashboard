@@ -79,7 +79,7 @@ const activeQuickFilter = computed(() => {
 
   const today = new Date()
   const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(today.getDate() - 7)
+  sevenDaysAgo.setDate(today.getDate() - 6)
 
   // Last month dates
   const firstOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
@@ -128,7 +128,7 @@ const setLast7Days = () => {
     // Set 7 days filter
     const today = new Date()
     const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(today.getDate() - 7)
+    sevenDaysAgo.setDate(today.getDate() - 6)
 
     emit('update:startDate', formatDateForInput(sevenDaysAgo))
     emit('update:endDate', formatDateForInput(today))
