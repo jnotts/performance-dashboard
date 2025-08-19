@@ -7,6 +7,9 @@
 
     <div class="header-right">
       <div class="filter-row">
+        <button @click="exportToPDF" class="export">
+          📄 Export PDF
+        </button>
         <div class="date-range">
           <input v-model="localStartDate" type="date" />
           <span>-</span>
@@ -46,6 +49,7 @@ interface Emits {
   (e: 'update:startDate', value: string): void
   (e: 'update:endDate', value: string): void
   (e: 'update:selectedDepartment', value: string): void
+  (e: 'exportToPDF'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -164,6 +168,11 @@ const formatDate = (date: Date) => {
     day: 'numeric'
   });
 }
+
+// Export to PDF handler
+const exportToPDF = () => {
+  emit('exportToPDF')
+}
 </script>
 
 <style scoped>
@@ -260,6 +269,16 @@ const formatDate = (date: Date) => {
 
 .filter-row button.clear:hover {
   background: #fecaca;
+}
+
+.filter-row button.export {
+  background: #f0f9ff;
+  border-color: #0ea5e9;
+  color: #0c4a6e;
+}
+
+.filter-row button.export:hover {
+  background: #e0f2fe;
 }
 
 /* Responsive Design */

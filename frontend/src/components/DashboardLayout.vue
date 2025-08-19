@@ -2,7 +2,8 @@
   <div class="dashboard-layout">
     <!-- Dashboard Header Component -->
     <DashboardHeader v-model:start-date="startDate" v-model:end-date="endDate"
-      v-model:selected-department="selectedDepartment" :departments="availableDepartments" />
+      v-model:selected-department="selectedDepartment" :departments="availableDepartments"
+      @export-to-p-d-f="handleExportToPDF" />
 
     <!-- Error state -->
     <div v-if="insightsError" class="error-message">
@@ -90,6 +91,7 @@ import DashboardHeader from './DashboardHeader.vue'
 import { useInsights } from '@/composables/useInsights';
 import type { FilterParams } from '@/utils/types';
 import { useAiInsights } from '@/composables/useAiInsights';
+import html2pdf from 'html2pdf.js';
 
 // Filter state
 const selectedDepartment = ref('')
@@ -155,6 +157,79 @@ const availableDepartments = computed(() => {
 const getInsightIcon = (index: number) => {
   const icons = ['💡', '📈', '⚠️'];
   return icons[index % icons.length];
+};
+
+// Export to PDF functionality - TODO: move to utility function/composable
+const handleExportToPDF = async () => {
+  // Wait for any loading states to complete
+  if (insightsLoading.value || aiInsightsLoading.value) {
+    alert('Please wait for data to finish loading before exporting.');
+    return;
+  }
+
+  try {
+    const element = document.querySelector('.main-content') as HTMLElement;
+    if (!element) {
+      console.error('Dashboard element not found');
+      return;
+    }
+
+    // Store original scroll position
+    const originalScrollTop = window.pageYOffset;
+
+    // Add class to remove box shadows for PDF export
+    document.body.classList.add('pdf-export');
+
+    // Scroll to top to ensure proper capture
+    window.scrollTo(0, 0);
+
+    // Wait for any animations/rendering to complete
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Generate filename with current date and filters
+    const today = new Date().toISOString().split('T')[0];
+    const deptSuffix = selectedDepartment.value ? `-${selectedDepartment.value}` : '';
+    const filename = `training-dashboard-${today}${deptSuffix}.pdf`;
+
+    // Get the full content height
+    const elementHeight = element.scrollHeight;
+    const elementWidth = element.scrollWidth;
+
+    const opt = {
+      margin: [0.2, 0.2, 0.2, 0.2],
+      filename,
+      image: { type: 'jpeg', quality: 0.85 },
+      html2canvas: {
+        scale: 4,
+        useCORS: true,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0,
+        width: elementWidth + 100,
+        height: elementHeight,
+        windowWidth: 1900,
+        windowHeight: elementHeight,
+        backgroundColor: '#ffffff'
+      },
+      jsPDF: {
+        unit: 'px',
+        format: [elementWidth + 100, elementHeight + 50],
+        orientation: elementWidth > elementHeight ? 'landscape' : 'portrait'
+      }
+    };
+
+    await html2pdf().set(opt).from(element).save();
+
+    // Remove PDF export class and restore original scroll position
+    document.body.classList.remove('pdf-export');
+    window.scrollTo(0, originalScrollTop);
+  } catch (error) {
+    console.error('Error exporting PDF:', error);
+    alert('Failed to export PDF. Please try again.');
+    // Remove PDF export class and restore scroll position on error
+    document.body.classList.remove('pdf-export');
+    window.scrollTo(0, window.pageYOffset);
+  }
 };
 
 </script>

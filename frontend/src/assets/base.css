@@ -36,3 +36,8 @@ body {
 #app {
   min-height: 100vh;
 }
+
+/* Remove box shadows during PDF export */
+.pdf-export * {
+  box-shadow: none !important;
+}
